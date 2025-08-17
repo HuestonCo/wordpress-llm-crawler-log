@@ -8,7 +8,7 @@
 Track and monitor LLM/AI bot visits to your WordPress site with detailed statistics and beautiful visualizations.
 
 <div align="center">
-  <img src="images/hueston-llmo-logo.png" alt="Hueston LLM Logo" width="200">
+  <img src="https://hueston.co/wp-content/uploads/hueston-light-logo-80px.svg" alt="Hueston Logo" width="200">
 </div>
 
 ## 📊 Overview
