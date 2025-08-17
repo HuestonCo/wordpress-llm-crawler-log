@@ -4,7 +4,7 @@ Tags: llm, ai, crawler, stats, analytics
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,6 +71,9 @@ Currently, data can be viewed in the admin interface. Export functionality may b
 5. Last 100 hits table showing real-time bot activity
 
 == Changelog ==
+= 1.3.1 =
+* Fixed all WordPress.org plugin check errors and warnings for improved code quality and security
+
 = 1.3.0 =
 * Major update with focus on LLM/AI bot tracking
 * Added 5 new specialized shortcodes for flexible display
@@ -86,5 +89,8 @@ Currently, data can be viewed in the admin interface. Export functionality may b
 * Initial release with basic crawler tracking
 
 == Upgrade Notice ==
+= 1.3.1 =
+Minor update to fix WordPress.org plugin check errors and warnings. Improves code quality and security standards compliance.
+
 = 1.3.0 =
 Major update focusing on LLM/AI bot tracking with new admin interface, multiple display options, and visual analytics. Recommended for all users.
