@@ -268,8 +268,7 @@ function maybe_log_crawler_hit(): void {
         return;
     }
 
-    $ua_raw = $_SERVER['HTTP_USER_AGENT'] ?? '';
-    $ua     = \sanitize_text_field( \wp_unslash( $ua_raw ) );
+    $ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? \sanitize_text_field( \wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
     if ( $ua === '' ) {
         return;
     }
@@ -285,8 +284,7 @@ function maybe_log_crawler_hit(): void {
     }
 
     // Build a normalized path for the current request (exclude query string).
-    $request_uri_raw = $_SERVER['REQUEST_URI'] ?? '/';
-    $request_uri     = \sanitize_text_field( \wp_unslash( $request_uri_raw ) );
+    $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? \sanitize_text_field( \wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '/';
     $absolute_url    = \home_url( $request_uri );
     $path            = (string) \wp_parse_url( $absolute_url, PHP_URL_PATH );
     if ( $path === '' ) {
@@ -310,24 +308,24 @@ function maybe_log_crawler_hit(): void {
             VALUES (%s, %s, %s, %s, 1)
             ON DUPLICATE KEY UPDATE hits = hits + 1";
 
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Using $wpdb->prepare correctly.
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Logging hit data
     $wpdb->query( $wpdb->prepare( $sql, $date, $bot_name, $path, $hash ) );
 
     // Resolve IP address (best-effort; may pass proxies). Store first token.
     $ip = '';
     if ( isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-        $xff   = (string) $_SERVER['HTTP_X_FORWARDED_FOR'];
+        $xff   = \sanitize_text_field( \wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) );
         $parts = array_map( 'trim', explode( ',', $xff ) );
         if ( ! empty( $parts ) ) {
             $ip = $parts[0];
         }
     }
     if ( $ip === '' && isset( $_SERVER['REMOTE_ADDR'] ) ) {
-        $ip = (string) $_SERVER['REMOTE_ADDR'];
+        $ip = \sanitize_text_field( \wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
     }
-    $ip = \sanitize_text_field( $ip );
 
     // Also log raw row for last-100 view.
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Logging request data
     $wpdb->insert(
         $requests_table,
         [
@@ -370,6 +368,7 @@ function shortcode_crawler_stats( $atts = [] ): string {
     $placeholders = implode( ',', array_fill( 0, count( $llm_bots ), '%s' ) );
 
     // Combined query over raw requests to get rolling 24h, 7d, 30d counts per LLM bot.
+    // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic placeholders for IN clause
     $sql_llm = $wpdb->prepare(
         "SELECT bot_name,
                 SUM(CASE WHEN hit_at >= %s THEN 1 ELSE 0 END) AS d24,
@@ -381,11 +380,15 @@ function shortcode_crawler_stats( $atts = [] ): string {
          ORDER BY bot_name ASC",
         array_merge( [ $t24_dt, $t7_dt, $t30_dt ], $llm_bots )
     );
-    $llm_rows = $wpdb->get_results( $sql_llm ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:enable
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+    $llm_rows = $wpdb->get_results( $sql_llm );
 
     // Raw last 100 (404s are not logged).
+    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from prefix
     $sql_raw = "SELECT hit_at, bot_name, url_path, user_agent, ip_address FROM {$requests_table} ORDER BY id DESC LIMIT 100";
-    $raw_rows = $wpdb->get_results( $sql_raw ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+    $raw_rows = $wpdb->get_results( $sql_raw );
 
     // Compose both sections for backward compatibility.
     return render_wpcs_llm_stats_section( $llm_rows ) . render_wpcs_last100_section( $raw_rows );
@@ -504,6 +507,7 @@ function shortcode_wpcs_llm_stats( $atts = [] ): string {
     $t30_dt = \wp_date( 'Y-m-d H:i:s', $now_ts - 30 * DAY_IN_SECONDS );
 
     $placeholders = implode( ',', array_fill( 0, count( $llm_bots ), '%s' ) );
+    // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic placeholders for IN clause
     $sql_llm = $wpdb->prepare(
         "SELECT bot_name,
                 SUM(CASE WHEN hit_at >= %s THEN 1 ELSE 0 END) AS d24,
@@ -515,7 +519,9 @@ function shortcode_wpcs_llm_stats( $atts = [] ): string {
          ORDER BY bot_name ASC",
         array_merge( [ $t24_dt, $t7_dt, $t30_dt ], $llm_bots )
     );
-    $llm_rows = $wpdb->get_results( $sql_llm ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:enable
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+    $llm_rows = $wpdb->get_results( $sql_llm );
 
     return render_wpcs_llm_stats_section( $llm_rows );
 }
@@ -531,8 +537,10 @@ function shortcode_wpcs_llm_last100( $atts = [] ): string {
 
     global $wpdb;
     $requests_table = $wpdb->prefix . 'wpcs_requests';
+    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from prefix
     $sql_raw = "SELECT hit_at, bot_name, url_path, ip_address FROM {$requests_table} ORDER BY id DESC LIMIT 100";
-    $raw_rows = $wpdb->get_results( $sql_raw ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+    $raw_rows = $wpdb->get_results( $sql_raw );
 
     return render_wpcs_last100_section( $raw_rows );
 }
@@ -555,8 +563,10 @@ function shortcode_wpcs_llm_ip_list( $atts = [] ): string {
 
     global $wpdb;
     $requests_table = $wpdb->prefix . 'wpcs_requests';
+    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name from prefix, limit is cast to int
     $sql = "SELECT bot_name, ip_address FROM {$requests_table} WHERE ip_address <> '' ORDER BY id DESC LIMIT " . (int) $limit;
-    $rows = $wpdb->get_results( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+    $rows = $wpdb->get_results( $sql );
 
     ob_start();
     ?>
@@ -721,6 +731,7 @@ function shortcode_wpcs_llm_bar( $atts = [] ): string {
     }
 
     $placeholders = implode( ',', array_fill( 0, count( $llm_bots ), '%s' ) );
+    // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic placeholders for IN clause
     $sql = $wpdb->prepare(
         "SELECT bot_name, COUNT(*) AS hits
          FROM {$requests_table}
@@ -730,8 +741,10 @@ function shortcode_wpcs_llm_bar( $atts = [] ): string {
          LIMIT %d",
         array_merge( $llm_bots, [ $since_dt, $limit ] )
     );
+    // phpcs:enable
 
-    $rows = $wpdb->get_results( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+    $rows = $wpdb->get_results( $sql );
     if ( empty( $rows ) ) {
         return '<div class="wpcs-chart-empty">' . \esc_html__( 'No data yet.', 'llm-bot-tracker-by-hueston' ) . '</div>';
     }
@@ -822,12 +835,11 @@ function render_wpcs_admin_logs_page(): void {
 
     // Read filters (GET for view; also read from POST for delete actions).
     $get = function( string $key ): string {
-        $v = isset( $_GET[ $key ] ) ? (string) $_GET[ $key ] : '';
-        return \sanitize_text_field( \wp_unslash( $v ) );
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only filter parameters
+        return isset( $_GET[ $key ] ) ? \sanitize_text_field( \wp_unslash( $_GET[ $key ] ) ) : '';
     };
     $post = function( string $key ): string {
-        $v = isset( $_POST[ $key ] ) ? (string) $_POST[ $key ] : '';
-        return \sanitize_text_field( \wp_unslash( $v ) );
+        return isset( $_POST[ $key ] ) ? \sanitize_text_field( \wp_unslash( $_POST[ $key ] ) ) : '';
     };
 
     $filter_bot  = $get( 'bot' );
@@ -836,7 +848,9 @@ function render_wpcs_admin_logs_page(): void {
     $filter_from = $get( 'from' ); // YYYY-MM-DD
     $filter_to   = $get( 'to' );   // YYYY-MM-DD
 
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only pagination parameters
     $per_page = isset( $_GET['per_page'] ) ? max( 10, min( 200, absint( $_GET['per_page'] ) ) ) : 50;
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only pagination parameters
     $paged    = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1;
 
     // Handle deletions (POST).
@@ -852,7 +866,7 @@ function render_wpcs_admin_logs_page(): void {
             $ids = array_values( array_filter( $ids, function( $i ){ return $i > 0; } ) );
             if ( ! empty( $ids ) ) {
                 $placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
-                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Dynamic placeholders and table name
                 $deleted = (int) $wpdb->query( $wpdb->prepare( "DELETE FROM {$requests_table} WHERE id IN ($placeholders)", $ids ) );
                 $notice  = sprintf( /* translators: %d = number deleted */ \esc_html__( 'Deleted %d entries.', 'llm-bot-tracker-by-hueston' ), $deleted );
             } else {
@@ -889,7 +903,7 @@ function render_wpcs_admin_logs_page(): void {
             }
 
             $sql = 'DELETE FROM ' . $requests_table . ' WHERE ' . implode( ' AND ', $where );
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Dynamic WHERE clause
             $deleted = (int) $wpdb->query( $wpdb->prepare( $sql, $args ) );
             $notice  = sprintf( /* translators: %d = number deleted */ \esc_html__( 'Deleted %d entries (filtered).', 'llm-bot-tracker-by-hueston' ), $deleted );
         }
@@ -925,12 +939,12 @@ function render_wpcs_admin_logs_page(): void {
 
     // Count total
     $sql_count = 'SELECT COUNT(*) FROM ' . $requests_table . ' WHERE ' . implode( ' AND ', $where );
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin page query
     $total = (int) $wpdb->get_var( $wpdb->prepare( $sql_count, $args ) );
 
     // Fetch page
     $sql_list = 'SELECT id, hit_at, bot_name, url_path, ip_address FROM ' . $requests_table . ' WHERE ' . implode( ' AND ', $where ) . ' ORDER BY id DESC LIMIT %d OFFSET %d';
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin page query
     $rows = (array) $wpdb->get_results( $wpdb->prepare( $sql_list, array_merge( $args, [ $per_page, $offset ] ) ) );
 
     $total_pages = max( 1, (int) ceil( $total / $per_page ) );
@@ -955,9 +969,9 @@ function render_wpcs_admin_logs_page(): void {
     $d30_dt   = \wp_date( 'Y-m-d H:i:s', $now_ts - 30 * DAY_IN_SECONDS );
     $d90_dt   = \wp_date( 'Y-m-d H:i:s', $now_ts - 90 * DAY_IN_SECONDS );
 
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin chart data
     $daily_rows = (array) $wpdb->get_results( $wpdb->prepare( 'SELECT DATE(hit_at) AS d, COUNT(*) AS c FROM ' . $requests_table . ' WHERE hit_at >= %s GROUP BY DATE(hit_at) ORDER BY d ASC', $d30_dt ) );
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin chart data
     $topbot_rows = (array) $wpdb->get_results( $wpdb->prepare( 'SELECT bot_name, COUNT(*) AS c FROM ' . $requests_table . ' WHERE hit_at >= %s GROUP BY bot_name ORDER BY c DESC LIMIT 8', $d7_dt ) );
 
     $daily_max = 0; $n = count( $daily_rows );
@@ -976,13 +990,13 @@ function render_wpcs_admin_logs_page(): void {
     }
 
     // Summary header with totals and legend (7d/30d/90d)
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin stats
     $total_all = (int) $wpdb->get_var( 'SELECT COUNT(*) FROM ' . $requests_table );
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin stats
     $total_7   = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . $requests_table . ' WHERE hit_at >= %s', $d7_dt ) );
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin stats
     $total_30  = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . $requests_table . ' WHERE hit_at >= %s', $d30_dt ) );
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin stats
     $total_90  = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . $requests_table . ' WHERE hit_at >= %s', $d90_dt ) );
 
     echo '<div class="wpcs-admin-summary" style="display:flex;gap:16px;align-items:center;margin:8px 0 12px 0;flex-wrap:wrap;">';
@@ -1051,8 +1065,8 @@ function render_wpcs_admin_logs_page(): void {
         echo '<text x="' . (int) $x_last . '" y="' . (int) ( $height - 6 ) . '" font-size="10" text-anchor="end" fill="#6b7280">' . \esc_html( $last_date ) . '</text>';
 
         // Area + line
-        echo '<path d="' . $area_d . '" fill="url(#wpcsGrad)" />';
-        echo '<polyline points="' . trim( $poly ) . '" fill="none" stroke="#D4AF37" stroke-width="2" />';
+        echo '<path d="' . \esc_attr( $area_d ) . '" fill="url(#wpcsGrad)" />';
+        echo '<polyline points="' . \esc_attr( trim( $poly ) ) . '" fill="none" stroke="#D4AF37" stroke-width="2" />';
 
         // Points (small)
         foreach ( $points as $p ) {
@@ -1085,7 +1099,7 @@ function render_wpcs_admin_logs_page(): void {
     echo '</div>'; // .wpcs-grid
 
     // Top toolbar with compact filters and quick search.
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin filter options
     $bot_options = (array) $wpdb->get_col( 'SELECT DISTINCT bot_name FROM ' . $requests_table . ' ORDER BY bot_name ASC LIMIT 200' );
 
     echo '<div class="tablenav top">';
@@ -1098,7 +1112,7 @@ function render_wpcs_admin_logs_page(): void {
         echo '<option value="">' . \esc_html__( 'All', 'llm-bot-tracker-by-hueston' ) . '</option>';
         foreach ( $bot_options as $opt ) {
             $sel = ( $opt === $filter_bot ) ? ' selected' : '';
-            echo '<option value="' . \esc_attr( (string) $opt ) . '"' . $sel . '>' . \esc_html( (string) $opt ) . '</option>';
+            echo '<option value="' . \esc_attr( (string) $opt ) . '"' . \esc_attr( $sel ) . '>' . \esc_html( (string) $opt ) . '</option>';
         }
         echo '</select></label>';
     } else {

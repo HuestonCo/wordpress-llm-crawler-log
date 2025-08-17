@@ -10,9 +10,9 @@ global $wpdb;
 $table = $wpdb->prefix . 'wpcs_hits';
 $requests_table = $wpdb->prefix . 'wpcs_requests';
 
-// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name is built from core prefix and known suffix.
+// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- Table drop on uninstall
 $wpdb->query( "DROP TABLE IF EXISTS {$table}" );
-// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name is built from core prefix and known suffix.
+// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- Table drop on uninstall
 $wpdb->query( "DROP TABLE IF EXISTS {$requests_table}" );
 
 delete_option( 'wpcs_db_version' );

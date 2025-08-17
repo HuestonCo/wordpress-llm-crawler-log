@@ -1,12 +1,14 @@
 === LLM Bot Tracker by Hueston ===
 Contributors: huestonwins
-Tags: llm, ai, crawler, bots, stats, analytics, chatgpt, claude, perplexity, gptbot, claudebot
+Tags: llm, ai, crawler, stats, analytics
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 7.4
 Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Track and monitor LLM/AI bot visits to your WordPress site with detailed statistics and visualizations.
 
 == Description ==
 LLM Bot Tracker tracks and displays statistics for LLM (Large Language Model) and AI-related web crawlers visiting your WordPress site. Monitor visits from ChatGPT, Claude, Perplexity, and other AI bots to understand how your content is being used for AI training and search.
