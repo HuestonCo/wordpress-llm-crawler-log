@@ -10,7 +10,7 @@
  * Author URI: https://hueston.co
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: wp-crawler-stats
+ * Text Domain: llm-bot-tracker-by-hueston
  * Domain Path: /languages
  */
 
@@ -44,13 +44,6 @@ function hex_to_rgba( string $hex, float $alpha ): string {
     }
     return sprintf( 'rgba(%d,%d,%d,%.3f)', $r, $g, $b, $alpha );
 }
-
-/**
- * Load text domain.
- */
-\add_action( 'init', function () {
-    \load_plugin_textdomain( 'wp-crawler-stats', false, \dirname( \plugin_basename( __FILE__ ) ) . '/languages' );
-} );
 
 /**
  * Get the crawler hits table name.
@@ -411,10 +404,10 @@ function render_wpcs_llm_stats_section( array $llm_rows ): string {
         <table class="wpcs-table" style="color:#fff;font-size:0.92em;">
             <thead>
                 <tr>
-                    <th><?php echo \esc_html__( 'LLM Bot', 'wp-crawler-stats' ); ?></th>
-                    <th><?php echo \esc_html__( '24h', 'wp-crawler-stats' ); ?></th>
-                    <th><?php echo \esc_html__( '7d', 'wp-crawler-stats' ); ?></th>
-                    <th><?php echo \esc_html__( '30d', 'wp-crawler-stats' ); ?></th>
+                    <th><?php echo \esc_html__( 'LLM Bot', 'llm-bot-tracker-by-hueston' ); ?></th>
+                    <th><?php echo \esc_html__( '24h', 'llm-bot-tracker-by-hueston' ); ?></th>
+                    <th><?php echo \esc_html__( '7d', 'llm-bot-tracker-by-hueston' ); ?></th>
+                    <th><?php echo \esc_html__( '30d', 'llm-bot-tracker-by-hueston' ); ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -428,7 +421,7 @@ function render_wpcs_llm_stats_section( array $llm_rows ): string {
                     </tr>
                 <?php endforeach; ?>
             <?php else : ?>
-                <tr><td colspan="4"><?php echo \esc_html__( 'No data yet.', 'wp-crawler-stats' ); ?></td></tr>
+                <tr><td colspan="4"><?php echo \esc_html__( 'No data yet.', 'llm-bot-tracker-by-hueston' ); ?></td></tr>
             <?php endif; ?>
             </tbody>
         </table>
@@ -449,10 +442,10 @@ function render_wpcs_last100_section( array $raw_rows ): string {
         <table class="wpcs-table" style="color:#fff;font-size:0.92em;">
             <thead>
                 <tr>
-                    <th><?php echo \esc_html__( 'When', 'wp-crawler-stats' ); ?></th>
-                    <th><?php echo \esc_html__( 'Bot', 'wp-crawler-stats' ); ?></th>
-                    <th><?php echo \esc_html__( 'Page', 'wp-crawler-stats' ); ?></th>
-                    <th><?php echo \esc_html__( 'IP', 'wp-crawler-stats' ); ?></th>
+                    <th><?php echo \esc_html__( 'When', 'llm-bot-tracker-by-hueston' ); ?></th>
+                    <th><?php echo \esc_html__( 'Bot', 'llm-bot-tracker-by-hueston' ); ?></th>
+                    <th><?php echo \esc_html__( 'Page', 'llm-bot-tracker-by-hueston' ); ?></th>
+                    <th><?php echo \esc_html__( 'IP', 'llm-bot-tracker-by-hueston' ); ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -484,7 +477,7 @@ function render_wpcs_last100_section( array $raw_rows ): string {
                     </tr>
                 <?php endforeach; ?>
             <?php else : ?>
-                <tr><td colspan="4"><?php echo \esc_html__( 'No data yet.', 'wp-crawler-stats' ); ?></td></tr>
+                <tr><td colspan="4"><?php echo \esc_html__( 'No data yet.', 'llm-bot-tracker-by-hueston' ); ?></td></tr>
             <?php endif; ?>
             </tbody>
         </table>
@@ -584,7 +577,7 @@ function shortcode_wpcs_llm_ip_list( $atts = [] ): string {
                 </li>
             <?php endforeach; ?>
         <?php else : ?>
-            <li class="wpcs-iplist-empty"><?php echo \esc_html__( 'No data yet.', 'wp-crawler-stats' ); ?></li>
+            <li class="wpcs-iplist-empty"><?php echo \esc_html__( 'No data yet.', 'llm-bot-tracker-by-hueston' ); ?></li>
         <?php endif; ?>
     </ul>
     <?php
@@ -710,13 +703,13 @@ function shortcode_wpcs_llm_bar( $atts = [] ): string {
     $now_ts = \current_time( 'timestamp' );
     if ( $window === '24h' ) {
         $since_dt = \wp_date( 'Y-m-d H:i:s', $now_ts - DAY_IN_SECONDS );
-        $label    = \__( 'Last 24h', 'wp-crawler-stats' );
+        $label    = \__( 'Last 24h', 'llm-bot-tracker-by-hueston' );
     } elseif ( $window === '30d' ) {
         $since_dt = \wp_date( 'Y-m-d H:i:s', $now_ts - 30 * DAY_IN_SECONDS );
-        $label    = \__( 'Last 30 days', 'wp-crawler-stats' );
+        $label    = \__( 'Last 30 days', 'llm-bot-tracker-by-hueston' );
     } else {
         $since_dt = \wp_date( 'Y-m-d H:i:s', $now_ts - 7 * DAY_IN_SECONDS );
-        $label    = \__( 'Last 7 days', 'wp-crawler-stats' );
+        $label    = \__( 'Last 7 days', 'llm-bot-tracker-by-hueston' );
     }
 
     global $wpdb;
@@ -724,7 +717,7 @@ function shortcode_wpcs_llm_bar( $atts = [] ): string {
     $llm_bots       = get_llm_bot_labels();
 
     if ( empty( $llm_bots ) ) {
-        return '<div class="wpcs-chart-empty">' . \esc_html__( 'No data yet.', 'wp-crawler-stats' ) . '</div>';
+        return '<div class="wpcs-chart-empty">' . \esc_html__( 'No data yet.', 'llm-bot-tracker-by-hueston' ) . '</div>';
     }
 
     $placeholders = implode( ',', array_fill( 0, count( $llm_bots ), '%s' ) );
@@ -740,7 +733,7 @@ function shortcode_wpcs_llm_bar( $atts = [] ): string {
 
     $rows = $wpdb->get_results( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
     if ( empty( $rows ) ) {
-        return '<div class="wpcs-chart-empty">' . \esc_html__( 'No data yet.', 'wp-crawler-stats' ) . '</div>';
+        return '<div class="wpcs-chart-empty">' . \esc_html__( 'No data yet.', 'llm-bot-tracker-by-hueston' ) . '</div>';
     }
 
     // Find max for scaling.
@@ -749,7 +742,7 @@ function shortcode_wpcs_llm_bar( $atts = [] ): string {
         $max = max( $max, (int) $r->hits );
     }
     if ( $max <= 0 ) {
-        return '<div class="wpcs-chart-empty">' . \esc_html__( 'No data yet.', 'wp-crawler-stats' ) . '</div>';
+        return '<div class="wpcs-chart-empty">' . \esc_html__( 'No data yet.', 'llm-bot-tracker-by-hueston' ) . '</div>';
     }
 
     $container_style = 'color:' . \esc_attr( $text_col ) . ';';
@@ -759,9 +752,9 @@ function shortcode_wpcs_llm_bar( $atts = [] ): string {
 
     ob_start();
     ?>
-    <div class="wpcs-bar-chart" role="img" aria-label="<?php echo \esc_attr( sprintf( /* translators: %s = window label */ \__( 'LLM bot hits (%s)', 'wp-crawler-stats' ), $label ) ); ?>" style="<?php echo \esc_attr( $container_style ); ?>">
+    <div class="wpcs-bar-chart" role="img" aria-label="<?php echo \esc_attr( sprintf( /* translators: %s = window label */ \__( 'LLM bot hits (%s)', 'llm-bot-tracker-by-hueston' ), $label ) ); ?>" style="<?php echo \esc_attr( $container_style ); ?>">
         <div class="wpcs-bar-chart-head" style="margin-bottom:8px;font-weight:600;">
-            <?php echo \esc_html( sprintf( /* translators: %s = window label */ \__( 'LLM bot hits — %s', 'wp-crawler-stats' ), $label ) ); ?>
+            <?php echo \esc_html( sprintf( /* translators: %s = window label */ \__( 'LLM bot hits — %s', 'llm-bot-tracker-by-hueston' ), $label ) ); ?>
         </div>
         <div class="wpcs-bar-chart-body">
             <?php foreach ( $rows as $r ) :
@@ -802,8 +795,8 @@ function shortcode_wpcs_llm_bar( $atts = [] ): string {
  */
 \add_action( 'admin_menu', function () {
     \add_management_page(
-        \esc_html__( 'Crawler Logs', 'wp-crawler-stats' ),
-        \esc_html__( 'LLM Crawler Logs', 'wp-crawler-stats' ),
+        \esc_html__( 'Crawler Logs', 'llm-bot-tracker-by-hueston' ),
+        \esc_html__( 'LLM Crawler Logs', 'llm-bot-tracker-by-hueston' ),
         'manage_options',
         'wpcs-logs',
         __NAMESPACE__ . '\\render_wpcs_admin_logs_page'
@@ -822,7 +815,7 @@ function shortcode_wpcs_llm_bar( $atts = [] ): string {
  * Render admin page for logs with filtering and deletion controls.
  */
 function render_wpcs_admin_logs_page(): void {
-    \current_user_can( 'manage_options' ) || \wp_die( \esc_html__( 'Unauthorized.', 'wp-crawler-stats' ) );
+    \current_user_can( 'manage_options' ) || \wp_die( \esc_html__( 'Unauthorized.', 'llm-bot-tracker-by-hueston' ) );
 
     global $wpdb;
     $requests_table = $wpdb->prefix . 'wpcs_requests';
@@ -850,7 +843,7 @@ function render_wpcs_admin_logs_page(): void {
     $notice = '';
     if ( isset( $_POST['wpcs_action'] ) ) {
         \check_admin_referer( 'wpcs_admin_logs_action', 'wpcs_admin_logs_nonce' );
-        \current_user_can( 'manage_options' ) || \wp_die( \esc_html__( 'Unauthorized.', 'wp-crawler-stats' ) );
+        \current_user_can( 'manage_options' ) || \wp_die( \esc_html__( 'Unauthorized.', 'llm-bot-tracker-by-hueston' ) );
 
         $action = $post( 'wpcs_action' );
 
@@ -861,9 +854,9 @@ function render_wpcs_admin_logs_page(): void {
                 $placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
                 // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                 $deleted = (int) $wpdb->query( $wpdb->prepare( "DELETE FROM {$requests_table} WHERE id IN ($placeholders)", $ids ) );
-                $notice  = sprintf( /* translators: %d = number deleted */ \esc_html__( 'Deleted %d entries.', 'wp-crawler-stats' ), $deleted );
+                $notice  = sprintf( /* translators: %d = number deleted */ \esc_html__( 'Deleted %d entries.', 'llm-bot-tracker-by-hueston' ), $deleted );
             } else {
-                $notice = \esc_html__( 'No entries selected.', 'wp-crawler-stats' );
+                $notice = \esc_html__( 'No entries selected.', 'llm-bot-tracker-by-hueston' );
             }
         } elseif ( $action === 'delete_filtered' ) {
             $cf_bot  = $post( 'bot' );
@@ -898,7 +891,7 @@ function render_wpcs_admin_logs_page(): void {
             $sql = 'DELETE FROM ' . $requests_table . ' WHERE ' . implode( ' AND ', $where );
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             $deleted = (int) $wpdb->query( $wpdb->prepare( $sql, $args ) );
-            $notice  = sprintf( /* translators: %d = number deleted */ \esc_html__( 'Deleted %d entries (filtered).', 'wp-crawler-stats' ), $deleted );
+            $notice  = sprintf( /* translators: %d = number deleted */ \esc_html__( 'Deleted %d entries (filtered).', 'llm-bot-tracker-by-hueston' ), $deleted );
         }
         // After deletion, reset to page 1 to avoid empty page.
         $paged = 1;
@@ -948,9 +941,9 @@ function render_wpcs_admin_logs_page(): void {
     echo '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">';
     $site_url = 'https://hueston.co';
     echo '<a href="' . \esc_url( $site_url ) . '" target="_blank" rel="noopener noreferrer">';
-    echo '<img src="' . \esc_url( $logo_url ) . '" alt="' . \esc_attr__( 'Hueston LLM', 'wp-crawler-stats' ) . '" style="height:40px;width:auto;" />';
+    echo '<img src="' . \esc_url( $logo_url ) . '" alt="' . \esc_attr__( 'Hueston LLM', 'llm-bot-tracker-by-hueston' ) . '" style="height:40px;width:auto;" />';
     echo '</a>';
-    echo '<h1 style="margin:0;">' . \esc_html__( 'Crawler Logs', 'wp-crawler-stats' ) . '</h1>';
+    echo '<h1 style="margin:0;">' . \esc_html__( 'Crawler Logs', 'llm-bot-tracker-by-hueston' ) . '</h1>';
     echo '</div>';
     if ( $notice !== '' ) {
         echo '<div class="notice notice-success"><p>' . \esc_html( $notice ) . '</p></div>';
@@ -993,7 +986,7 @@ function render_wpcs_admin_logs_page(): void {
     $total_90  = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . $requests_table . ' WHERE hit_at >= %s', $d90_dt ) );
 
     echo '<div class="wpcs-admin-summary" style="display:flex;gap:16px;align-items:center;margin:8px 0 12px 0;flex-wrap:wrap;">';
-    echo '<div class="wpcs-total" style="font-weight:700;font-size:18px;">' . \esc_html__( 'Total', 'wp-crawler-stats' ) . ': ' . \esc_html( number_format_i18n( $total_all ) ) . '</div>';
+    echo '<div class="wpcs-total" style="font-weight:700;font-size:18px;">' . \esc_html__( 'Total', 'llm-bot-tracker-by-hueston' ) . ': ' . \esc_html( number_format_i18n( $total_all ) ) . '</div>';
     echo '<div class="wpcs-legend" style="display:flex;gap:14px;align-items:center;">';
     echo '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#D4AF37;"></span><span>7d ' . \esc_html( number_format_i18n( $total_7 ) ) . '</span></span>';
     echo '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#0A1F44;"></span><span>30d ' . \esc_html( number_format_i18n( $total_30 ) ) . '</span></span>';
@@ -1007,7 +1000,7 @@ function render_wpcs_admin_logs_page(): void {
 
     // Left: 30-day trend chart
     echo '<div class="wpcs-card">';
-    echo '<h3>' . \esc_html__( 'Last 30 days (total hits per day)', 'wp-crawler-stats' ) . '</h3>';
+    echo '<h3>' . \esc_html__( 'Last 30 days (total hits per day)', 'llm-bot-tracker-by-hueston' ) . '</h3>';
     if ( ! empty( $daily_rows ) && $daily_max > 0 ) {
         $width  = 720; // viewBox width
         $height = 220; // viewBox height
@@ -1037,7 +1030,7 @@ function render_wpcs_admin_logs_page(): void {
         $first_date = (string) $daily_rows[0]->d;
         $last_date  = (string) $daily_rows[ $n - 1 ]->d;
 
-        echo '<svg role="img" aria-label="' . \esc_attr__( 'Daily hits (30 days)', 'wp-crawler-stats' ) . '" width="100%" viewBox="0 0 ' . (int) $width . ' ' . (int) $height . '">';
+        echo '<svg role="img" aria-label="' . \esc_attr__( 'Daily hits (30 days)', 'llm-bot-tracker-by-hueston' ) . '" width="100%" viewBox="0 0 ' . (int) $width . ' ' . (int) $height . '">';
         // Gradient for area
         echo '<defs><linearGradient id="wpcsGrad" x1="0" y1="0" x2="0" y2="1">'
            . '<stop offset="0%" stop-color="#D4AF37" stop-opacity="0.35" />'
@@ -1067,13 +1060,13 @@ function render_wpcs_admin_logs_page(): void {
         }
         echo '</svg>';
     } else {
-        echo '<div>' . \esc_html__( 'No data.', 'wp-crawler-stats' ) . '</div>';
+        echo '<div>' . \esc_html__( 'No data.', 'llm-bot-tracker-by-hueston' ) . '</div>';
     }
     echo '</div>';
 
     // Right: Top bots visual bars (7d)
     echo '<div class="wpcs-card">';
-    echo '<h3>' . \esc_html__( 'Top bots — last 7 days', 'wp-crawler-stats' ) . '</h3>';
+    echo '<h3>' . \esc_html__( 'Top bots — last 7 days', 'llm-bot-tracker-by-hueston' ) . '</h3>';
     $bot_max = 0; foreach ( $topbot_rows as $r ) { $bot_max = max( $bot_max, (int) $r->c ); }
     if ( ! empty( $topbot_rows ) && $bot_max > 0 ) {
         foreach ( $topbot_rows as $r ) {
@@ -1085,7 +1078,7 @@ function render_wpcs_admin_logs_page(): void {
             echo '</div>';
         }
     } else {
-        echo '<div>' . \esc_html__( 'No data.', 'wp-crawler-stats' ) . '</div>';
+        echo '<div>' . \esc_html__( 'No data.', 'llm-bot-tracker-by-hueston' ) . '</div>';
     }
     echo '</div>';
 
@@ -1100,25 +1093,25 @@ function render_wpcs_admin_logs_page(): void {
     echo '<form method="get" action="" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">';
     echo '<input type="hidden" name="page" value="wpcs-logs" />';
     if ( ! empty( $bot_options ) ) {
-        echo '<label>' . \esc_html__( 'Bot', 'wp-crawler-stats' ) . ' ';
+        echo '<label>' . \esc_html__( 'Bot', 'llm-bot-tracker-by-hueston' ) . ' ';
         echo '<select name="bot">';
-        echo '<option value="">' . \esc_html__( 'All', 'wp-crawler-stats' ) . '</option>';
+        echo '<option value="">' . \esc_html__( 'All', 'llm-bot-tracker-by-hueston' ) . '</option>';
         foreach ( $bot_options as $opt ) {
             $sel = ( $opt === $filter_bot ) ? ' selected' : '';
             echo '<option value="' . \esc_attr( (string) $opt ) . '"' . $sel . '>' . \esc_html( (string) $opt ) . '</option>';
         }
         echo '</select></label>';
     } else {
-        echo '<label>' . \esc_html__( 'Bot', 'wp-crawler-stats' ) . ' <input type="text" name="bot" value="' . \esc_attr( $filter_bot ) . '" class="regular-text" /></label>';
+        echo '<label>' . \esc_html__( 'Bot', 'llm-bot-tracker-by-hueston' ) . ' <input type="text" name="bot" value="' . \esc_attr( $filter_bot ) . '" class="regular-text" /></label>';
     }
-    echo '<label>' . \esc_html__( 'Path contains', 'wp-crawler-stats' ) . ' <input type="text" name="path" value="' . \esc_attr( $filter_path ) . '" /></label>';
-    echo '<label>' . \esc_html__( 'IP contains', 'wp-crawler-stats' ) . ' <input type="text" name="ip" value="' . \esc_attr( $filter_ip ) . '" /></label>';
-    echo '<label>' . \esc_html__( 'From', 'wp-crawler-stats' ) . ' <input type="date" name="from" value="' . \esc_attr( $filter_from ) . '" /></label>';
-    echo '<label>' . \esc_html__( 'To', 'wp-crawler-stats' ) . ' <input type="date" name="to" value="' . \esc_attr( $filter_to ) . '" /></label>';
-    echo '<label>' . \esc_html__( 'Per page', 'wp-crawler-stats' ) . ' <input type="number" min="10" max="200" name="per_page" value="' . (int) $per_page . '" style="width:90px" /></label>';
-    echo '<button class="button button-primary">' . \esc_html__( 'Filter', 'wp-crawler-stats' ) . '</button>';
+    echo '<label>' . \esc_html__( 'Path contains', 'llm-bot-tracker-by-hueston' ) . ' <input type="text" name="path" value="' . \esc_attr( $filter_path ) . '" /></label>';
+    echo '<label>' . \esc_html__( 'IP contains', 'llm-bot-tracker-by-hueston' ) . ' <input type="text" name="ip" value="' . \esc_attr( $filter_ip ) . '" /></label>';
+    echo '<label>' . \esc_html__( 'From', 'llm-bot-tracker-by-hueston' ) . ' <input type="date" name="from" value="' . \esc_attr( $filter_from ) . '" /></label>';
+    echo '<label>' . \esc_html__( 'To', 'llm-bot-tracker-by-hueston' ) . ' <input type="date" name="to" value="' . \esc_attr( $filter_to ) . '" /></label>';
+    echo '<label>' . \esc_html__( 'Per page', 'llm-bot-tracker-by-hueston' ) . ' <input type="number" min="10" max="200" name="per_page" value="' . (int) $per_page . '" style="width:90px" /></label>';
+    echo '<button class="button button-primary">' . \esc_html__( 'Filter', 'llm-bot-tracker-by-hueston' ) . '</button>';
     $reset_url = \admin_url( 'tools.php?page=wpcs-logs' );
-    echo ' <a class="button" href="' . \esc_url( $reset_url ) . '">' . \esc_html__( 'Reset', 'wp-crawler-stats' ) . '</a>';
+    echo ' <a class="button" href="' . \esc_url( $reset_url ) . '">' . \esc_html__( 'Reset', 'llm-bot-tracker-by-hueston' ) . '</a>';
     echo '</form>';
     echo '</div>';
     echo '</div>';
@@ -1137,10 +1130,10 @@ function render_wpcs_admin_logs_page(): void {
     echo '<table class="widefat fixed striped" id="wpcs-logs-table">';
     echo '<thead><tr>';
     echo '<td class="manage-column column-cb check-column"><input type="checkbox" onclick="jQuery(\'.wpcs-cb\').prop(\'checked\', this.checked);" /></td>';
-    echo '<th>' . \esc_html__( 'When', 'wp-crawler-stats' ) . '</th>';
-    echo '<th>' . \esc_html__( 'Bot', 'wp-crawler-stats' ) . '</th>';
-    echo '<th>' . \esc_html__( 'Page', 'wp-crawler-stats' ) . '</th>';
-    echo '<th>' . \esc_html__( 'IP', 'wp-crawler-stats' ) . '</th>';
+    echo '<th>' . \esc_html__( 'When', 'llm-bot-tracker-by-hueston' ) . '</th>';
+    echo '<th>' . \esc_html__( 'Bot', 'llm-bot-tracker-by-hueston' ) . '</th>';
+    echo '<th>' . \esc_html__( 'Page', 'llm-bot-tracker-by-hueston' ) . '</th>';
+    echo '<th>' . \esc_html__( 'IP', 'llm-bot-tracker-by-hueston' ) . '</th>';
     echo '</tr></thead><tbody>';
 
     if ( ! empty( $rows ) ) {
@@ -1169,14 +1162,14 @@ function render_wpcs_admin_logs_page(): void {
             echo '</tr>';
         }
     } else {
-        echo '<tr><td colspan="5">' . \esc_html__( 'No results.', 'wp-crawler-stats' ) . '</td></tr>';
+        echo '<tr><td colspan="5">' . \esc_html__( 'No results.', 'llm-bot-tracker-by-hueston' ) . '</td></tr>';
     }
 
     echo '</tbody></table>';
 
     echo '<p class="submit">';
-    echo '<button type="submit" name="wpcs_action" value="delete_selected" class="button button-secondary" onclick="return confirm(\'' . \esc_js( __( 'Delete selected entries?', 'wp-crawler-stats' ) ) . '\');">' . \esc_html__( 'Delete selected', 'wp-crawler-stats' ) . '</button> ';
-    echo '<button type="submit" name="wpcs_action" value="delete_filtered" class="button button-secondary" onclick="return confirm(\'' . \esc_js( __( 'Delete ALL entries matching current filters?', 'wp-crawler-stats' ) ) . '\');">' . \esc_html__( 'Delete filtered', 'wp-crawler-stats' ) . '</button>';
+    echo '<button type="submit" name="wpcs_action" value="delete_selected" class="button button-secondary" onclick="return confirm(\'' . \esc_js( __( 'Delete selected entries?', 'llm-bot-tracker-by-hueston' ) ) . '\');">' . \esc_html__( 'Delete selected', 'llm-bot-tracker-by-hueston' ) . '</button> ';
+    echo '<button type="submit" name="wpcs_action" value="delete_filtered" class="button button-secondary" onclick="return confirm(\'' . \esc_js( __( 'Delete ALL entries matching current filters?', 'llm-bot-tracker-by-hueston' ) ) . '\');">' . \esc_html__( 'Delete filtered', 'llm-bot-tracker-by-hueston' ) . '</button>';
     echo '</p>';
 
     // Pagination controls.
@@ -1191,13 +1184,13 @@ function render_wpcs_admin_logs_page(): void {
     ], admin_url( 'tools.php' ) );
 
     echo '<div class="tablenav"><div class="tablenav-pages">';
-    echo '<span class="displaying-num">' . (int) $total . ' ' . \esc_html__( 'items', 'wp-crawler-stats' ) . '</span> ';
+    echo '<span class="displaying-num">' . (int) $total . ' ' . \esc_html__( 'items', 'llm-bot-tracker-by-hueston' ) . '</span> ';
     if ( $total_pages > 1 ) {
         $prev = max( 1, $paged - 1 );
         $next = min( $total_pages, $paged + 1 );
-        echo '<a class="button" href="' . \esc_url( add_query_arg( 'paged', $prev, $base_url ) ) . '">« ' . \esc_html__( 'Prev', 'wp-crawler-stats' ) . '</a> ';
+        echo '<a class="button" href="' . \esc_url( add_query_arg( 'paged', $prev, $base_url ) ) . '">« ' . \esc_html__( 'Prev', 'llm-bot-tracker-by-hueston' ) . '</a> ';
         echo '<span style="margin:0 8px;">' . (int) $paged . ' / ' . (int) $total_pages . '</span> ';
-        echo '<a class="button" href="' . \esc_url( add_query_arg( 'paged', $next, $base_url ) ) . '">' . \esc_html__( 'Next', 'wp-crawler-stats' ) . ' »</a>';
+        echo '<a class="button" href="' . \esc_url( add_query_arg( 'paged', $next, $base_url ) ) . '">' . \esc_html__( 'Next', 'llm-bot-tracker-by-hueston' ) . ' »</a>';
     }
     echo '</div></div>';
 
