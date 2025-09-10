@@ -1,0 +1,147 @@
+/**
+ * Admin styles for LLM Bot Tracker
+ */
+
+/* Hide admin notices on our plugin page */
+.tools_page_wpcs-logs .notice,
+.tools_page_wpcs-logs .updated,
+.tools_page_wpcs-logs .error,
+.tools_page_wpcs-logs .notice-warning,
+.tools_page_wpcs-logs .notice-success,
+.tools_page_wpcs-logs .notice-info,
+.tools_page_wpcs-logs .notice-error,
+.tools_page_wpcs-logs #wpbody-content .notice,
+.tools_page_wpcs-logs #wpbody-content .updated,
+.tools_page_wpcs-logs #wpbody-content .error,
+.tools_page_wpcs-logs .wrap .notice,
+.tools_page_wpcs-logs .wrap .updated,
+.tools_page_wpcs-logs .wrap .error {
+    display: none !important;
+}
+
+/* Admin page grid layout */
+.wpcs-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+    .wpcs-grid {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+.wpcs-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.wpcs-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Top bots chart */
+.wpcs-topbots-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+}
+
+.wpcs-topbots-label {
+    flex: 0 0 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wpcs-topbots-track {
+    flex: 1 1 auto;
+    height: 10px;
+    background: #f3f4f6;
+    border-radius: 6px;
+    position: relative;
+}
+
+.wpcs-topbots-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #0A1F44, #D4AF37);
+}
+
+/* Admin summary */
+.wpcs-admin-summary {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin: 8px 0 12px 0;
+    flex-wrap: wrap;
+}
+
+.wpcs-total {
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.wpcs-legend {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+
+.wpcs-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wpcs-legend span span:first-child {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+/* Admin header */
+.wpcs-admin-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.wpcs-admin-header h1 {
+    margin: 0;
+}
+
+.wpcs-logo {
+    height: 40px;
+    width: auto;
+}
+
+/* Top bots value */
+.wpcs-topbots-value {
+    flex: 0 0 56px;
+    text-align: right;
+}
+
+/* Filter form */
+.wpcs-filter-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.wpcs-per-page {
+    width: 90px;
+}
+
+/* Pagination */
+.wpcs-page-info {
+    margin: 0 8px;
+}

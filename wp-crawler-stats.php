@@ -15,7 +15,7 @@
  */
 
 // Namespace and basic constants.
-namespace WPCrawlerStats;
+namespace LLMBotTrackerByHueston;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -29,20 +29,22 @@ const OPTION_DB_VERSION = 'wpcs_db_version';
  * @param string $hex
  * @param float  $alpha
  */
-function hex_to_rgba( string $hex, float $alpha ): string {
-    $hex = \sanitize_hex_color( $hex ) ?: '#000000';
-    $alpha = max( 0.0, min( 1.0, $alpha ) );
-    $hex = ltrim( $hex, '#' );
-    if ( strlen( $hex ) === 3 ) {
-        $r = hexdec( str_repeat( $hex[0], 2 ) );
-        $g = hexdec( str_repeat( $hex[1], 2 ) );
-        $b = hexdec( str_repeat( $hex[2], 2 ) );
-    } else {
-        $r = hexdec( substr( $hex, 0, 2 ) );
-        $g = hexdec( substr( $hex, 2, 2 ) );
-        $b = hexdec( substr( $hex, 4, 2 ) );
+if ( ! function_exists( __NAMESPACE__ . '\\hex_to_rgba' ) ) {
+    function hex_to_rgba( string $hex, float $alpha ): string {
+        $hex = \sanitize_hex_color( $hex ) ?: '#000000';
+        $alpha = max( 0.0, min( 1.0, $alpha ) );
+        $hex = ltrim( $hex, '#' );
+        if ( strlen( $hex ) === 3 ) {
+            $r = hexdec( str_repeat( $hex[0], 2 ) );
+            $g = hexdec( str_repeat( $hex[1], 2 ) );
+            $b = hexdec( str_repeat( $hex[2], 2 ) );
+        } else {
+            $r = hexdec( substr( $hex, 0, 2 ) );
+            $g = hexdec( substr( $hex, 2, 2 ) );
+            $b = hexdec( substr( $hex, 4, 2 ) );
+        }
+        return sprintf( 'rgba(%d,%d,%d,%.3f)', $r, $g, $b, $alpha );
     }
-    return sprintf( 'rgba(%d,%d,%d,%.3f)', $r, $g, $b, $alpha );
 }
 
 /**
@@ -401,10 +403,11 @@ function shortcode_crawler_stats( $atts = [] ): string {
  * @param array<int,object> $llm_rows
  */
 function render_wpcs_llm_stats_section( array $llm_rows ): string {
+    maybe_enqueue_frontend_styles();
     ob_start();
     ?>
-    <div class="wpcs-llm" style="color: inherit;">
-        <table class="wpcs-table" style="color:#fff;font-size:0.92em;">
+    <div class="wpcs-llm">
+        <table class="wpcs-table">
             <thead>
                 <tr>
                     <th><?php echo \esc_html__( 'LLM Bot', 'llm-bot-tracker-by-hueston' ); ?></th>
@@ -439,10 +442,11 @@ function render_wpcs_llm_stats_section( array $llm_rows ): string {
  * @param array<int,object> $raw_rows
  */
 function render_wpcs_last100_section( array $raw_rows ): string {
+    maybe_enqueue_frontend_styles();
     ob_start();
     ?>
-    <div class="wpcs-raw" style="color: inherit;">
-        <table class="wpcs-table" style="color:#fff;font-size:0.92em;">
+    <div class="wpcs-raw">
+        <table class="wpcs-table">
             <thead>
                 <tr>
                     <th><?php echo \esc_html__( 'When', 'llm-bot-tracker-by-hueston' ); ?></th>
@@ -568,9 +572,10 @@ function shortcode_wpcs_llm_ip_list( $atts = [] ): string {
     // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
     $rows = $wpdb->get_results( $sql );
 
+    maybe_enqueue_frontend_styles();
     ob_start();
     ?>
-    <ul class="wpcs-iplist" style="color: inherit;">
+    <ul class="wpcs-iplist">
         <?php if ( ! empty( $rows ) ) : ?>
             <?php foreach ( $rows as $row ) : ?>
                 <?php
@@ -758,15 +763,14 @@ function shortcode_wpcs_llm_bar( $atts = [] ): string {
         return '<div class="wpcs-chart-empty">' . \esc_html__( 'No data yet.', 'llm-bot-tracker-by-hueston' ) . '</div>';
     }
 
-    $container_style = 'color:' . \esc_attr( $text_col ) . ';';
-
     // Rocket glow color derived from bar end.
     $glow = hex_to_rgba( $bar_end, 0.7 );
 
+    maybe_enqueue_frontend_styles();
     ob_start();
     ?>
-    <div class="wpcs-bar-chart" role="img" aria-label="<?php echo \esc_attr( sprintf( /* translators: %s = window label */ \__( 'LLM bot hits (%s)', 'llm-bot-tracker-by-hueston' ), $label ) ); ?>" style="<?php echo \esc_attr( $container_style ); ?>">
-        <div class="wpcs-bar-chart-head" style="margin-bottom:8px;font-weight:600;">
+    <div class="wpcs-bar-chart" role="img" aria-label="<?php echo \esc_attr( sprintf( /* translators: %s = window label */ \__( 'LLM bot hits (%s)', 'llm-bot-tracker-by-hueston' ), $label ) ); ?>" style="color:<?php echo \esc_attr( $text_col ); ?>;">
+        <div class="wpcs-bar-chart-head">
             <?php echo \esc_html( sprintf( /* translators: %s = window label */ \__( 'LLM bot hits — %s', 'llm-bot-tracker-by-hueston' ), $label ) ); ?>
         </div>
         <div class="wpcs-bar-chart-body">
@@ -774,19 +778,19 @@ function shortcode_wpcs_llm_bar( $atts = [] ): string {
                 $name    = (string) $r->bot_name;
                 $hits    = (int) $r->hits;
                 $percent = max( 1, (int) floor( ( $hits / $max ) * 100 ) ); ?>
-                <div class="wpcs-bar-row" style="display:flex;align-items:center;gap:8px;margin:6px 0;">
-                    <div class="wpcs-bar-label" style="flex:0 0 140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                <div class="wpcs-bar-row">
+                    <div class="wpcs-bar-label">
                         <?php echo \esc_html( $name ); ?>
                     </div>
-                    <div class="wpcs-bar-track" style="flex:1 1 auto;height:12px;background:<?php echo \esc_attr( $track ); ?>;border-radius:6px;position:relative;overflow:hidden;">
-                        <div class="wpcs-bar-contrail" style="position:absolute;left:0;top:50%;transform:translateY(-50%);height:6px;width:<?php echo (int) $percent; ?>%;background:linear-gradient(90deg, <?php echo \esc_attr( hex_to_rgba( $bar_start, 0.0 ) ); ?> 0%, <?php echo \esc_attr( hex_to_rgba( $bar_start, 0.35 ) ); ?> 55%, <?php echo \esc_attr( $bar_end ); ?> 100%);border-radius:6px;"></div>
-                        <span class="wpcs-rocket" aria-hidden="true" style="position:absolute;left:<?php echo (int) $percent; ?>%;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;pointer-events:none;display:block;">
+                    <div class="wpcs-bar-track" style="background:<?php echo \esc_attr( $track ); ?>;">
+                        <div class="wpcs-bar-contrail" style="width:<?php echo (int) $percent; ?>%;background:linear-gradient(90deg, <?php echo \esc_attr( hex_to_rgba( $bar_start, 0.0 ) ); ?> 0%, <?php echo \esc_attr( hex_to_rgba( $bar_start, 0.35 ) ); ?> 55%, <?php echo \esc_attr( $bar_end ); ?> 100%);"></div>
+                        <span class="wpcs-rocket" aria-hidden="true" style="left:<?php echo (int) $percent; ?>%;">
                             <svg viewBox="0 0 24 24" width="12" height="12" role="img" aria-hidden="true" focusable="false" style="filter: drop-shadow(0 0 3px <?php echo esc_attr( $glow ); ?>);">
                                 <path fill="<?php echo esc_attr( $bar_end ); ?>" d="M2 21l5-2 9-9-3-3-9 9-2 5zm13.6-14.6l2 2 3.1-3.1c.5-.5.5-1.3 0-1.8L19 1.8c-.5-.5-1.3-.5-1.8 0l-3.1 3.1 1.5 1.5z"/>
                             </svg>
                         </span>
                     </div>
-                    <div class="wpcs-bar-value" style="flex:0 0 auto;width:64px;text-align:right;">
+                    <div class="wpcs-bar-value">
                         <?php echo \esc_html( \number_format_i18n( $hits ) ); ?>
                     </div>
                 </div>
@@ -816,13 +820,53 @@ function shortcode_wpcs_llm_bar( $atts = [] ): string {
     );
 } );
 
+/**
+ * Enqueue admin styles
+ */
+\add_action( 'admin_enqueue_scripts', function ( $hook ) {
+    // Only enqueue on our admin page
+    if ( $hook !== 'tools_page_wpcs-logs' ) {
+        return;
+    }
+    
+    \wp_enqueue_style(
+        'llm-bot-tracker-admin',
+        \plugins_url( 'assets/css/admin.css', __FILE__ ),
+        [],
+        VERSION
+    );
+} );
+
+/**
+ * Enqueue frontend styles for shortcodes
+ */
+\add_action( 'wp_enqueue_scripts', function () {
+    // Register the style
+    \wp_register_style(
+        'llm-bot-tracker-frontend',
+        \plugins_url( 'assets/css/frontend.css', __FILE__ ),
+        [],
+        VERSION
+    );
+} );
+
+/**
+ * Helper to ensure frontend styles are enqueued when shortcode is used
+ */
+function maybe_enqueue_frontend_styles(): void {
+    if ( ! \wp_style_is( 'llm-bot-tracker-frontend', 'enqueued' ) ) {
+        \wp_enqueue_style( 'llm-bot-tracker-frontend' );
+    }
+}
+
 // Hide unrelated admin notices on our Tools page to reduce noise.
-\add_action( 'admin_head', function () {
+\add_action( 'admin_notices', function () {
     $screen = function_exists( '\\get_current_screen' ) ? \get_current_screen() : null;
     if ( $screen && isset( $screen->id ) && $screen->id === 'tools_page_wpcs-logs' ) {
-        echo '<style>#wpbody-content > .notice, #wpbody-content > .updated, #wpbody-content > .error { display:none !important; }</style>';
+        \remove_all_actions( 'admin_notices' );
+        \remove_all_actions( 'all_admin_notices' );
     }
-} );
+}, 1 );
 
 /**
  * Render admin page for logs with filtering and deletion controls.
@@ -953,12 +997,12 @@ function render_wpcs_admin_logs_page(): void {
     // Render
     echo '<div class="wrap">';
     $logo_url = plugins_url( 'images/hueston-llmo-logo.png', __FILE__ );
-    echo '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">';
+    echo '<div class="wpcs-admin-header">';
     $site_url = 'https://hueston.co';
     echo '<a href="' . \esc_url( $site_url ) . '" target="_blank" rel="noopener noreferrer">';
-    echo '<img src="' . \esc_url( $logo_url ) . '" alt="' . \esc_attr__( 'Hueston LLM', 'llm-bot-tracker-by-hueston' ) . '" style="height:40px;width:auto;" />';
+    echo '<img src="' . \esc_url( $logo_url ) . '" alt="' . \esc_attr__( 'Hueston LLM', 'llm-bot-tracker-by-hueston' ) . '" class="wpcs-logo" />';
     echo '</a>';
-    echo '<h1 style="margin:0;">' . \esc_html__( 'Crawler Logs', 'llm-bot-tracker-by-hueston' ) . '</h1>';
+    echo '<h1>' . \esc_html__( 'Crawler Logs', 'llm-bot-tracker-by-hueston' ) . '</h1>';
     echo '</div>';
     if ( $notice !== '' ) {
         echo '<div class="notice notice-success"><p>' . \esc_html( $notice ) . '</p></div>';
@@ -1000,17 +1044,15 @@ function render_wpcs_admin_logs_page(): void {
     // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Admin stats
     $total_90  = (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM ' . $requests_table . ' WHERE hit_at >= %s', $d90_dt ) );
 
-    echo '<div class="wpcs-admin-summary" style="display:flex;gap:16px;align-items:center;margin:8px 0 12px 0;flex-wrap:wrap;">';
-    echo '<div class="wpcs-total" style="font-weight:700;font-size:18px;">' . \esc_html__( 'Total', 'llm-bot-tracker-by-hueston' ) . ': ' . \esc_html( number_format_i18n( $total_all ) ) . '</div>';
-    echo '<div class="wpcs-legend" style="display:flex;gap:14px;align-items:center;">';
-    echo '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#D4AF37;"></span><span>7d ' . \esc_html( number_format_i18n( $total_7 ) ) . '</span></span>';
-    echo '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#0A1F44;"></span><span>30d ' . \esc_html( number_format_i18n( $total_30 ) ) . '</span></span>';
-    echo '<span style="display:inline-flex;align-items:center;gap:6px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#6b7280;"></span><span>90d ' . \esc_html( number_format_i18n( $total_90 ) ) . '</span></span>';
+    echo '<div class="wpcs-admin-summary">';
+    echo '<div class="wpcs-total">' . \esc_html__( 'Total', 'llm-bot-tracker-by-hueston' ) . ': ' . \esc_html( number_format_i18n( $total_all ) ) . '</div>';
+    echo '<div class="wpcs-legend">';
+    echo '<span><span style="background:#D4AF37;"></span><span>7d ' . \esc_html( number_format_i18n( $total_7 ) ) . '</span></span>';
+    echo '<span><span style="background:#0A1F44;"></span><span>30d ' . \esc_html( number_format_i18n( $total_30 ) ) . '</span></span>';
+    echo '<span><span style="background:#6b7280;"></span><span>90d ' . \esc_html( number_format_i18n( $total_90 ) ) . '</span></span>';
     echo '</div>';
     echo '</div>';
 
-    // Minimal responsive layout + cards
-    echo '<style>.wpcs-grid{display:grid;gap:16px;grid-template-columns:1fr}@media(min-width:900px){.wpcs-grid{grid-template-columns:2fr 1fr}}.wpcs-card{border:1px solid #e5e7eb;border-radius:8px;padding:12px}.wpcs-card h3{margin:0 0 8px 0;font-size:14px;font-weight:600}.wpcs-topbots-row{display:flex;align-items:center;gap:8px;margin:6px 0}.wpcs-topbots-label{flex:0 0 140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wpcs-topbots-track{flex:1 1 auto;height:10px;background:#f3f4f6;border-radius:6px;position:relative}.wpcs-topbots-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#0A1F44,#D4AF37)}</style>';
     echo '<div class="wpcs-grid">';
 
     // Left: 30-day trend chart
@@ -1089,7 +1131,7 @@ function render_wpcs_admin_logs_page(): void {
             echo '<div class="wpcs-topbots-row">';
             echo '<div class="wpcs-topbots-label">' . \esc_html( $name ) . '</div>';
             echo '<div class="wpcs-topbots-track"><div class="wpcs-topbots-fill" style="width:' . (int) $pct . '%;"></div></div>';
-            echo '<div style="flex:0 0 56px;text-align:right;">' . \esc_html( number_format_i18n( $c ) ) . '</div>';
+            echo '<div class="wpcs-topbots-value">' . \esc_html( number_format_i18n( $c ) ) . '</div>';
             echo '</div>';
         }
     } else {
@@ -1105,7 +1147,7 @@ function render_wpcs_admin_logs_page(): void {
 
     echo '<div class="tablenav top">';
     echo '<div class="alignleft actions">';
-    echo '<form method="get" action="" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">';
+    echo '<form method="get" action="" class="wpcs-filter-form">';
     echo '<input type="hidden" name="page" value="wpcs-logs" />';
     if ( ! empty( $bot_options ) ) {
         echo '<label>' . \esc_html__( 'Bot', 'llm-bot-tracker-by-hueston' ) . ' ';
@@ -1123,7 +1165,7 @@ function render_wpcs_admin_logs_page(): void {
     echo '<label>' . \esc_html__( 'IP contains', 'llm-bot-tracker-by-hueston' ) . ' <input type="text" name="ip" value="' . \esc_attr( $filter_ip ) . '" /></label>';
     echo '<label>' . \esc_html__( 'From', 'llm-bot-tracker-by-hueston' ) . ' <input type="date" name="from" value="' . \esc_attr( $filter_from ) . '" /></label>';
     echo '<label>' . \esc_html__( 'To', 'llm-bot-tracker-by-hueston' ) . ' <input type="date" name="to" value="' . \esc_attr( $filter_to ) . '" /></label>';
-    echo '<label>' . \esc_html__( 'Per page', 'llm-bot-tracker-by-hueston' ) . ' <input type="number" min="10" max="200" name="per_page" value="' . (int) $per_page . '" style="width:90px" /></label>';
+    echo '<label>' . \esc_html__( 'Per page', 'llm-bot-tracker-by-hueston' ) . ' <input type="number" min="10" max="200" name="per_page" value="' . (int) $per_page . '" class="wpcs-per-page" /></label>';
     echo '<button class="button button-primary">' . \esc_html__( 'Filter', 'llm-bot-tracker-by-hueston' ) . '</button>';
     $reset_url = \admin_url( 'tools.php?page=wpcs-logs' );
     echo ' <a class="button" href="' . \esc_url( $reset_url ) . '">' . \esc_html__( 'Reset', 'llm-bot-tracker-by-hueston' ) . '</a>';
@@ -1204,7 +1246,7 @@ function render_wpcs_admin_logs_page(): void {
         $prev = max( 1, $paged - 1 );
         $next = min( $total_pages, $paged + 1 );
         echo '<a class="button" href="' . \esc_url( add_query_arg( 'paged', $prev, $base_url ) ) . '">« ' . \esc_html__( 'Prev', 'llm-bot-tracker-by-hueston' ) . '</a> ';
-        echo '<span style="margin:0 8px;">' . (int) $paged . ' / ' . (int) $total_pages . '</span> ';
+        echo '<span class="wpcs-page-info">' . (int) $paged . ' / ' . (int) $total_pages . '</span> ';
         echo '<a class="button" href="' . \esc_url( add_query_arg( 'paged', $next, $base_url ) ) . '">' . \esc_html__( 'Next', 'llm-bot-tracker-by-hueston' ) . ' »</a>';
     }
     echo '</div></div>';
