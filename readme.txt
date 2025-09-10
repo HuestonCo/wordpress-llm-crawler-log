@@ -4,11 +4,11 @@ Tags: ai bot tracker, chatgpt detector, claude bot, perplexity crawler, ai seo, 
 Requires at least: 6.5
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.4.1
+Stable tag: 1.4.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Automatically track ChatGPT, Claude, Perplexity & 25+ AI bots crawling your WordPress site. Monitor AI search engine visits, detect AI web scrapers & optimize for LLMO.
+Automatically track ChatGPT, Claude, Perplexity & 30+ AI bots crawling your WordPress site. Monitor AI search engine visits, detect AI web scrapers & optimize for LLMO.
 
 == Description ==
 
@@ -38,17 +38,18 @@ Without this data, you're flying blind in the AI era of search.
 
 = ✨ Core Features =
 
-**🤖 Automatic Detection of 25+ AI Bots Including:**
+**🤖 Automatic Detection of 30+ AI Bots Including:**
 
 * **OpenAI Family:** GPTBot, ChatGPT-User, OAI-SearchBot (SearchGPT)
 * **Anthropic Family:** ClaudeBot, Claude-Web, Claude-SearchBot  
 * **Perplexity:** PerplexityBot, Perplexity-User
-* **Google AI:** Google-Extended, GoogleOther, Google-CloudVertexBot, Gemini crawler
+* **Google AI:** Google-Extended, GoogleOther, Google-CloudVertexBot, GoogleAgent-Mariner, Gemini-Deep-Research
+* **Amazon AI:** Amazonbot, NovaAct (Nova AI Agent)
 * **Meta AI:** FacebookBot, Meta-ExternalAgent, Meta-ExternalFetcher
 * **Microsoft:** Bingbot (AI-enhanced), MSN Bot
+* **AI Assistants:** Devin (Software Engineering AI), LinerBot (Academic Research), QualifiedBot
 * **Common Crawl:** CCBot (feeds multiple AI systems)
 * **ByteDance:** Bytespider (TikTok AI)
-* **Amazon:** Amazonbot (Alexa AI)
 * **Others:** MistralAI, You.com bot, Neeva bot, AI2Bot, Diffbot, SemrushBot with AI
 
 **📊 Powerful Analytics Dashboard (Tools > LLM Crawler Logs)**
@@ -237,6 +238,17 @@ No! The plugin is designed to be completely automatic. Install it and forget it.
 
 == Changelog ==
 
+= 1.4.2 (2024-12-09) =
+* New: Added support for 6 new AI agents and assistants
+* New: GoogleAgent-Mariner - Google's autonomous AI agent for multi-step tasks
+* New: Gemini-Deep-Research - Google Gemini's research assistant agent
+* New: NovaAct - Amazon's Nova AI agent for web interactions
+* New: Devin - Software engineering AI assistant that browses websites
+* New: LinerBot - Academic research AI assistant crawler
+* New: QualifiedBot - B2B conversational marketing AI agent
+* Enhancement: Updated bot count from 25+ to 30+ AI agents tracked
+* Database: No schema changes required (uses existing infrastructure)
+
 = 1.4.1 (2024-12-09) =
 * Performance: Dramatically improved AI Blind Spots tab loading speed (3-5x faster)
 * Performance: Added intelligent caching for AI discovery scores (7-day cache)
@@ -299,6 +311,9 @@ No! The plugin is designed to be completely automatic. Install it and forget it.
 * GPTBot and CCBot detection
 
 == Upgrade Notice ==
+
+= 1.4.2 =
+New AI agents supported! Now tracking GoogleAgent-Mariner, Gemini-Deep-Research, NovaAct, Devin, LinerBot, and QualifiedBot. Stay ahead of the latest AI crawlers.
 
 = 1.4.1 =
 Critical performance update! Tab switching is now 3-5x faster with intelligent caching. Includes pagination for large sites and optimized database queries.

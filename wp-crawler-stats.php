@@ -2,8 +2,8 @@
 /**
  * Plugin Name: LLM Bot Tracker by Hueston
  * Plugin URI: https://github.com/HuestonCo/wordpress-llm-crawler-log
- * Description: Track and monitor LLM/AI bot visits to your WordPress site. Display statistics for GPTBot, ClaudeBot, PerplexityBot and 25+ other AI crawlers.
- * Version: 1.4.1
+ * Description: Track and monitor LLM/AI bot visits to your WordPress site. Display statistics for GPTBot, ClaudeBot, PerplexityBot and 30+ other AI crawlers.
+ * Version: 1.4.2
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Author: Hueston
@@ -19,7 +19,7 @@ namespace LLMBotTrackerByHueston;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '1.4.1';
+const VERSION = '1.4.2';
 const DB_VERSION = '1.4.1';
 const OPTION_DB_VERSION = 'wpcs_db_version';
 
@@ -146,6 +146,12 @@ function detect_bot_name( string $user_agent ): string {
         'mistralai-user'   => 'MistralAI-User',
         'google-extended'  => 'Google-Extended',
         'google-cloudvertexbot' => 'Google-CloudVertexBot',
+        'googleagent-mariner' => 'GoogleAgent-Mariner',
+        'gemini-deep-research' => 'Gemini-Deep-Research',
+        'novaact'          => 'NovaAct',
+        'devin'            => 'Devin',
+        'linerbot'         => 'LinerBot',
+        'qualifiedbot'     => 'QualifiedBot',
         'applebot-extended'=> 'Applebot-Extended',
         'facebookbot'      => 'FacebookBot',
         'meta-externalagent' => 'Meta-ExternalAgent',
@@ -210,6 +216,12 @@ function get_llm_bot_labels(): array {
         'MistralAI-User',
         'Google-Extended',
         'Google-CloudVertexBot',
+        'GoogleAgent-Mariner',
+        'Gemini-Deep-Research',
+        'NovaAct',
+        'Devin',
+        'LinerBot',
+        'QualifiedBot',
         'Applebot-Extended',
         'FacebookBot',
         'Meta-ExternalAgent',
@@ -245,6 +257,12 @@ function get_bot_favicon_domain( string $bot_name ): string {
         'Bytespider'        => 'bytedance.com',
         'Google-Extended'   => 'google.com',
         'Google-CloudVertexBot' => 'cloud.google.com',
+        'GoogleAgent-Mariner' => 'google.com',
+        'Gemini-Deep-Research' => 'gemini.google.com',
+        'NovaAct'           => 'amazon.com',
+        'Devin'             => 'devin.ai',
+        'LinerBot'          => 'liner.com',
+        'QualifiedBot'      => 'qualified.io',
         'Applebot-Extended' => 'apple.com',
         'Applebot'          => 'apple.com',
         'FacebookBot'       => 'facebook.com',
