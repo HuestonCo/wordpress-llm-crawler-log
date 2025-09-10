@@ -4,11 +4,11 @@ Tags: ai bot tracker, chatgpt detector, claude bot, perplexity crawler, ai seo, 
 Requires at least: 6.5
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.4.2
+Stable tag: 1.4.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Automatically track ChatGPT, Claude, Perplexity & 30+ AI bots crawling your WordPress site. Monitor AI search engine visits, detect AI web scrapers & optimize for LLMO.
+Automatically track ChatGPT, Claude, Perplexity & 27 AI bots crawling your WordPress site. Monitor AI search engine visits, detect AI web scrapers & optimize for LLMO.
 
 == Description ==
 
@@ -38,7 +38,7 @@ Without this data, you're flying blind in the AI era of search.
 
 = ✨ Core Features =
 
-**🤖 Automatic Detection of 30+ AI Bots Including:**
+**🤖 Automatic Detection of 27 AI Bots Including:**
 
 * **OpenAI Family:** GPTBot, ChatGPT-User, OAI-SearchBot (SearchGPT)
 * **Anthropic Family:** ClaudeBot, Claude-Web, Claude-SearchBot  
@@ -179,7 +179,17 @@ No! LLM Bot Tracker runs efficiently in the background with zero impact on visit
 No. The plugin exclusively tracks identified AI/LLM crawlers and bots. It does not track, store, or process any human visitor data, making it 100% GDPR compliant.
 
 = Which AI bots and crawlers can it detect? =
-Currently 25+ including GPTBot (ChatGPT), ClaudeBot (Anthropic), PerplexityBot, CCBot, Bytespider (TikTok), Google-Extended, Gemini, Meta AI bots, Bingbot, You.com bot, and many more. Detection updates are added automatically.
+The plugin tracks exactly 27 AI/LLM bots:
+
+**OpenAI:** GPTBot, ChatGPT-User, OAI-SearchBot
+**Anthropic:** ClaudeBot, Claude-Web, Claude-SearchBot, Claude-User
+**Perplexity:** PerplexityBot, Perplexity-User
+**Google AI:** Google-Extended, Google-CloudVertexBot, GoogleAgent-Mariner, Gemini-Deep-Research
+**Amazon:** Amazonbot, NovaAct
+**Meta AI:** Meta-ExternalAgent, Meta-ExternalFetcher
+**Others:** MistralAI-User, Devin, LinerBot, QualifiedBot, Bytespider, CCBot, Omgilibot, Omgili, Applebot-Extended, ProRataInc
+
+We continuously update detection patterns as new AI agents are released.
 
 = How do I view the tracking data? =
 Go to **Tools > LLM Crawler Logs** in your WordPress admin. You'll see all AI bot activity, with powerful filtering and analysis tools. No external service or account needed.
@@ -237,6 +247,12 @@ No! The plugin is designed to be completely automatic. Install it and forget it.
 9. **Compact Stats Widget** - Optional sidebar display
 
 == Changelog ==
+
+= 1.4.3 (2024-12-09) =
+* Refined: Focused exclusively on AI/LLM bots - removed non-AI crawlers
+* Enhancement: Improved bot classification for cleaner analytics
+* Documentation: Added complete list of all 27 tracked AI agents in FAQ
+* Optimization: Streamlined bot detection for better performance
 
 = 1.4.2 (2024-12-09) =
 * New: Added support for 6 new AI agents and assistants
@@ -311,6 +327,9 @@ No! The plugin is designed to be completely automatic. Install it and forget it.
 * GPTBot and CCBot detection
 
 == Upgrade Notice ==
+
+= 1.4.3 =
+Refined focus on AI/LLM bots only! Cleaner analytics with 27 verified AI agents. Improved performance and classification.
 
 = 1.4.2 =
 New AI agents supported! Now tracking GoogleAgent-Mariner, Gemini-Deep-Research, NovaAct, Devin, LinerBot, and QualifiedBot. Stay ahead of the latest AI crawlers.

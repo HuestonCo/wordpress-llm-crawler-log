@@ -2,8 +2,8 @@
 /**
  * Plugin Name: LLM Bot Tracker by Hueston
  * Plugin URI: https://github.com/HuestonCo/wordpress-llm-crawler-log
- * Description: Track and monitor LLM/AI bot visits to your WordPress site. Display statistics for GPTBot, ClaudeBot, PerplexityBot and 27 other AI crawlers.
- * Version: 1.4.3
+ * Description: Track and monitor LLM/AI bot visits to your WordPress site. Display statistics for GPTBot, ClaudeBot, PerplexityBot and 30+ other AI crawlers.
+ * Version: 1.4.2
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Author: Hueston
@@ -19,7 +19,7 @@ namespace LLMBotTrackerByHueston;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '1.4.3';
+const VERSION = '1.4.2';
 const DB_VERSION = '1.4.1';
 const OPTION_DB_VERSION = 'wpcs_db_version';
 
@@ -223,10 +223,14 @@ function get_llm_bot_labels(): array {
         'LinerBot',
         'QualifiedBot',
         'Applebot-Extended',
+        'FacebookBot',
         'Meta-ExternalAgent',
         'Meta-ExternalFetcher',
+        'PetalBot',
         'Amazonbot',
+        'archive.org_bot',
         'ProRataInc',
+        'Timpibot',
         'Omgilibot',
         'Omgili',
     ];
