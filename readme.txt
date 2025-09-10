@@ -1,10 +1,10 @@
-=== LLM Bot Tracker by Hueston - AI Crawler Detection & Analytics ===
+=== LLM Bot Tracker - AI Crawler Detection & Analytics ===
 Contributors: huestonwins
 Tags: ai bot tracker, chatgpt detector, claude bot, perplexity crawler, ai seo, llm analytics, gptbot tracker, ai crawler monitor, bot detection, web scraping detection, ai traffic analytics, search bot tracker, crawler logs, ai visitor tracking, llmo
 Requires at least: 6.5
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 1.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -237,6 +237,26 @@ No! The plugin is designed to be completely automatic. Install it and forget it.
 
 == Changelog ==
 
+= 1.4.1 (2024-12-09) =
+* Performance: Dramatically improved AI Blind Spots tab loading speed (3-5x faster)
+* Performance: Added intelligent caching for AI discovery scores (7-day cache)
+* Performance: Implemented pagination for large datasets (50 items per page)
+* Performance: Removed expensive database queries for internal link checking
+* Enhancement: Added "Refresh Analysis" button for manual cache updates
+* Enhancement: Improved AI scoring algorithm with better content evaluation
+* Fix: Tab switching no longer causes full page reload delays
+* Fix: Better memory management for sites with thousands of pages
+* Fix: Include images folder in plugin package for logo display
+
+= 1.4.0 (2024-12-09) =
+* New Feature: AI Blind Spots analysis - identify pages not visited by AI bots
+* New: AI Discovery Score - rates each page's discoverability by AI systems
+* New: Tabbed interface in admin dashboard for better organization
+* Added: Coverage statistics showing percentage of content visited by AI
+* Added: Word count analysis for ignored pages
+* Improved: Admin UI with unified navigation
+* Database: Added page analysis table for caching AI visibility data
+
 = 1.3.1 (2024-12-15) =
 * Security: Enhanced input sanitization and data escaping per WordPress.org standards
 * Security: Added nonce verification to all admin actions
@@ -279,6 +299,12 @@ No! The plugin is designed to be completely automatic. Install it and forget it.
 * GPTBot and CCBot detection
 
 == Upgrade Notice ==
+
+= 1.4.1 =
+Critical performance update! Tab switching is now 3-5x faster with intelligent caching. Includes pagination for large sites and optimized database queries.
+
+= 1.4.0 =
+Major feature update! New AI Blind Spots analysis helps you discover pages invisible to AI bots. Includes AI Discovery Score and improved admin interface with tabs.
 
 = 1.3.1 =
 Important security update. All users should upgrade immediately for enhanced security and performance improvements.

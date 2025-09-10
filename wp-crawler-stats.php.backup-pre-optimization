@@ -3,7 +3,7 @@
  * Plugin Name: LLM Bot Tracker by Hueston
  * Plugin URI: https://github.com/HuestonCo/wordpress-llm-crawler-log
  * Description: Track and monitor LLM/AI bot visits to your WordPress site. Display statistics for GPTBot, ClaudeBot, PerplexityBot and 25+ other AI crawlers.
- * Version: 1.4.1
+ * Version: 1.4.0
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Author: Hueston
@@ -19,8 +19,8 @@ namespace LLMBotTrackerByHueston;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '1.4.1';
-const DB_VERSION = '1.4.1';
+const VERSION = '1.4.0';
+const DB_VERSION = '1.4.0';
 const OPTION_DB_VERSION = 'wpcs_db_version';
 
 /**
@@ -828,78 +828,13 @@ function shortcode_wpcs_llm_bar( $atts = [] ): string {
  */
 
 /**
- * Get cached AI discovery score or calculate if needed
- * 
- * @param int $post_id Post ID
- * @param bool $force_refresh Force recalculation
- * @return int Score from 0-100
- */
-function get_cached_ai_score( $post_id, $force_refresh = false ) {
-    global $wpdb;
-    $analysis_table = $wpdb->prefix . 'wpcs_page_analysis';
-    
-    if ( ! $force_refresh ) {
-        // Try to get cached score (less than 7 days old)
-        $cached = $wpdb->get_row( $wpdb->prepare(
-            "SELECT ai_score, analyzed_at FROM {$analysis_table} 
-             WHERE post_id = %d 
-             AND analyzed_at > DATE_SUB(NOW(), INTERVAL 7 DAY)",
-            $post_id
-        ) );
-        
-        if ( $cached ) {
-            return (int) $cached->ai_score;
-        }
-    }
-    
-    // Calculate fresh score
-    $score = calculate_ai_discovery_score( $post_id );
-    
-    // Store in cache table
-    $wpdb->replace(
-        $analysis_table,
-        array(
-            'post_id' => $post_id,
-            'ai_score' => $score,
-            'analyzed_at' => current_time( 'mysql' )
-        ),
-        array( '%d', '%d', '%s' )
-    );
-    
-    return $score;
-}
-
-/**
- * Get pages not visited by AI bots (optimized with pagination and caching)
+ * Get pages not visited by AI bots
  * 
  * @param int $days Number of days to look back
- * @param int $page Current page number
- * @param int $per_page Items per page
- * @param bool $force_refresh Force refresh of cache
- * @return array Array with pages and pagination info
+ * @return array Array of WP_Post objects with additional properties
  */
-function get_ai_ignored_pages( $days = 30, $page = 1, $per_page = 50, $force_refresh = false ) {
+function get_ai_ignored_pages( $days = 30 ) {
     global $wpdb;
-    
-    // Check cache first (unless force refresh)
-    $cache_key = 'wpcs_ai_blindspots_' . $days . '_days';
-    if ( ! $force_refresh ) {
-        $cached_data = \get_transient( $cache_key );
-        if ( false !== $cached_data ) {
-            // Apply pagination to cached results
-            $total = count( $cached_data );
-            $offset = ( $page - 1 ) * $per_page;
-            $paged_results = array_slice( $cached_data, $offset, $per_page );
-            
-            return array(
-                'pages' => $paged_results,
-                'total' => $total,
-                'per_page' => $per_page,
-                'current_page' => $page,
-                'total_pages' => ceil( $total / $per_page )
-            );
-        }
-    }
     
     // Use WordPress functions for getting posts
     $args = array(
@@ -915,13 +850,7 @@ function get_ai_ignored_pages( $days = 30, $page = 1, $per_page = 50, $force_ref
     $all_posts = \get_posts( $args );
     
     if ( empty( $all_posts ) ) {
-        return array(
-            'pages' => array(),
-            'total' => 0,
-            'per_page' => $per_page,
-            'current_page' => $page,
-            'total_pages' => 0
-        );
+        return array();
     }
     
     // Get visited URLs using prepared statement
@@ -929,13 +858,7 @@ function get_ai_ignored_pages( $days = 30, $page = 1, $per_page = 50, $force_ref
     $llm_bots = get_llm_bot_labels();
     
     if ( empty( $llm_bots ) ) {
-        return array(
-            'pages' => array(),
-            'total' => 0,
-            'per_page' => $per_page,
-            'current_page' => $page,
-            'total_pages' => 0
-        );
+        return array();
     }
     
     $placeholders = implode( ',', array_fill( 0, count( $llm_bots ), '%s' ) );
@@ -950,9 +873,15 @@ function get_ai_ignored_pages( $days = 30, $page = 1, $per_page = 50, $force_ref
     );
     // phpcs:enable
     
-    // Get visited URLs (no need for transient, query is fast enough)
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-    $visited_urls = $wpdb->get_col( $query );
+    // Cache the result using WordPress transients
+    $cache_key = 'wpcs_visited_urls_' . md5( $query );
+    $visited_urls = \get_transient( $cache_key );
+    
+    if ( false === $visited_urls ) {
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+        $visited_urls = $wpdb->get_col( $query );
+        \set_transient( $cache_key, $visited_urls, HOUR_IN_SECONDS );
+    }
     
     // Find ignored pages
     $ignored_pages = array();
@@ -964,52 +893,27 @@ function get_ai_ignored_pages( $days = 30, $page = 1, $per_page = 50, $force_ref
         if ( ! in_array( $path, $visited_urls, true ) ) {
             $post = \get_post( $post_id );
             
-            if ( $post ) {
-                // Use cached AI score
-                $ai_score = get_cached_ai_score( $post_id, $force_refresh );
-                
-                // Build simplified page data
-                $ignored_pages[] = array(
-                    'id' => $post_id,
-                    'title' => $post->post_title,
-                    'type' => $post->post_type,
-                    'date' => $post->post_date,
-                    'permalink' => $permalink,
-                    'ai_score' => $ai_score
-                );
-            }
+            // Add extra data while maintaining WP_Post structure
+            $post->ai_ignored = true;
+            $post->days_ignored = $days;
+            $post->permalink = $permalink;
+            $post->ai_score = calculate_ai_discovery_score( $post_id );
+            
+            $ignored_pages[] = $post;
         }
     }
     
-    // Sort by AI score (lowest first - needs most attention)
-    usort( $ignored_pages, function( $a, $b ) {
-        return $a['ai_score'] - $b['ai_score'];
-    } );
-    
-    // Cache the full results for 6 hours
-    \set_transient( $cache_key, $ignored_pages, 6 * HOUR_IN_SECONDS );
-    
-    // Apply pagination
-    $total = count( $ignored_pages );
-    $offset = ( $page - 1 ) * $per_page;
-    $paged_results = array_slice( $ignored_pages, $offset, $per_page );
-    
-    return array(
-        'pages' => $paged_results,
-        'total' => $total,
-        'per_page' => $per_page,
-        'current_page' => $page,
-        'total_pages' => ceil( $total / $per_page )
-    );
+    return $ignored_pages;
 }
 
 /**
- * Calculate AI Discovery Score (optimized - removed expensive queries)
+ * Calculate AI Discovery Score following WordPress standards
  * 
  * @param int $post_id Post ID to analyze
  * @return int Score from 0-100
  */
 function calculate_ai_discovery_score( $post_id ) {
+    global $wpdb;
     $score = 100;
     
     // Validate post ID
@@ -1018,66 +922,42 @@ function calculate_ai_discovery_score( $post_id ) {
     }
     
     // Check if post exists
-    $post = \get_post( $post_id );
-    if ( ! $post ) {
+    if ( ! \get_post( $post_id ) ) {
         return 0;
     }
     
     // Check content length
-    $content = $post->post_content;
+    $content = \get_post_field( 'post_content', $post_id );
     $word_count = str_word_count( \wp_strip_all_tags( $content ) );
-    
-    if ( $word_count < 100 ) {
-        $score -= 30;  // Very short content
-    } elseif ( $word_count < 300 ) {
-        $score -= 20;  // Short content
-    } elseif ( $word_count < 500 ) {
-        $score -= 10;  // Below average content
+    if ( $word_count < 300 ) {
+        $score -= 20;
     }
     
-    // Check for title
-    if ( empty( $post->post_title ) || strlen( $post->post_title ) < 10 ) {
-        $score -= 15;
-    }
-    
-    // Check for excerpt
-    if ( empty( $post->post_excerpt ) ) {
-        $score -= 10;
-    }
-    
-    // Check if page is in menu (likely important)
-    $menu_items = \wp_get_nav_menu_items( \get_nav_menu_locations() );
-    if ( is_array( $menu_items ) ) {
-        foreach ( $menu_items as $item ) {
-            if ( isset( $item->object_id ) && $item->object_id == $post_id ) {
-                $score += 10;  // Bonus for being in navigation
-                break;
-            }
-        }
-    }
-    
-    // Check for featured image
-    if ( ! \has_post_thumbnail( $post_id ) ) {
-        $score -= 5;
-    }
-    
-    // Check for meta description (Yoast SEO) - only if available
+    // Check for meta description (Yoast SEO)
     if ( function_exists( '\\WPSEO_Meta::get_value' ) ) {
         $meta_desc = \WPSEO_Meta::get_value( 'metadesc', $post_id );
         if ( empty( $meta_desc ) ) {
-            $score -= 15;
+            $score -= 10;
         }
         
         $noindex = \WPSEO_Meta::get_value( 'meta-robots-noindex', $post_id );
         if ( $noindex === '1' ) {
-            $score -= 40;  // Noindex is a strong signal
+            $score -= 30;
         }
     }
     
-    // Check post age (older posts might be less relevant)
-    $post_age_days = ( time() - strtotime( $post->post_date ) ) / DAY_IN_SECONDS;
-    if ( $post_age_days > 365 ) {
-        $score -= 5;  // Over a year old
+    // Check if orphan page (no internal links)
+    $internal_links = $wpdb->get_var( $wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->posts} 
+         WHERE post_content LIKE %s 
+         AND post_status = 'publish' 
+         AND ID != %d",
+        '%' . \get_permalink( $post_id ) . '%',
+        $post_id
+    ) );
+    
+    if ( $internal_links == 0 ) {
+        $score -= 25;
     }
     
     // Allow other plugins to modify score
@@ -1572,48 +1452,31 @@ function render_logs_tab_content(): void {
 }
 
 /**
- * Render the AI Blind Spots tab content (optimized with pagination)
+ * Render the AI Blind Spots tab content
  * v1.4.0 - New feature
  */
 function render_blindspots_tab_content(): void {
-    // Get parameters
+    // Get data
     $days = isset( $_GET['days'] ) ? absint( $_GET['days'] ) : 30;
-    $current_page = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1;
-    $force_refresh = isset( $_GET['refresh'] ) && $_GET['refresh'] === '1';
-    
-    // Get paginated data
-    $result = get_ai_ignored_pages( $days, $current_page, 50, $force_refresh );
-    $ignored_pages = $result['pages'];
-    $ignored_total = $result['total'];
-    $total_pages_count = $result['total_pages'];
-    
-    // Get total published posts/pages for stats
-    $total_published = \wp_count_posts( 'post' )->publish + \wp_count_posts( 'page' )->publish;
-    $coverage_percent = $total_published > 0 ? round( ( ( $total_published - $ignored_total ) / $total_published ) * 100 ) : 0;
-    
-    // Show refresh success message
-    if ( $force_refresh ) {
-        echo '<div class="notice notice-success is-dismissible"><p>';
-        echo \esc_html__( 'Analysis cache refreshed successfully!', 'llm-bot-tracker-by-hueston' );
-        echo '</p></div>';
-    }
+    $ignored_pages = get_ai_ignored_pages( $days );
+    $total_pages = \wp_count_posts( 'post' )->publish + \wp_count_posts( 'page' )->publish;
+    $ignored_count = count( $ignored_pages );
+    $coverage_percent = $total_pages > 0 ? round( ( ( $total_pages - $ignored_count ) / $total_pages ) * 100 ) : 0;
     
     ?>
     <style>
         .wpcs-blindspot-stats { display: flex; gap: 20px; margin: 20px 0; }
-        .wpcs-blindspot-stats .card { flex: 1; padding: 20px; background: #fff; border: 1px solid #ddd; text-align: center; border-radius: 8px; }
+        .wpcs-blindspot-stats .card { flex: 1; padding: 20px; background: #fff; border: 1px solid #ddd; text-align: center; }
         .wpcs-blindspot-stats h2 { font-size: 32px; margin: 0; color: #D4AF37; }
-        .wpcs-score-bar { width: 100px; height: 20px; background: #f0f0f0; border-radius: 10px; overflow: hidden; display: inline-block; }
+        .wpcs-score-bar { width: 100px; height: 20px; background: #f0f0f0; border-radius: 10px; overflow: hidden; }
         .wpcs-score-fill { height: 100%; background: linear-gradient(90deg, #0A1F44, #D4AF37); color: #fff; text-align: center; font-size: 11px; line-height: 20px; }
-        .wpcs-filter-bar { background: #fff; padding: 15px; border: 1px solid #ddd; margin: 20px 0; display: flex; align-items: center; gap: 20px; }
-        .wpcs-refresh-btn { margin-left: auto; }
     </style>
     
-    <p><?php echo \esc_html__( 'Pages on your site that have not been visited by AI/LLM bots. Lower AI scores indicate pages that need optimization for better AI discovery.', 'llm-bot-tracker-by-hueston' ); ?></p>
+    <p><?php echo \esc_html__( 'Pages on your site that have not been visited by AI/LLM bots.', 'llm-bot-tracker-by-hueston' ); ?></p>
     
     <div class="wpcs-blindspot-stats">
         <div class="card">
-            <h2><?php echo \esc_html( number_format_i18n( $ignored_total ) ); ?></h2>
+            <h2><?php echo \esc_html( number_format_i18n( $ignored_count ) ); ?></h2>
             <p><?php echo \esc_html__( 'Pages Invisible to AI', 'llm-bot-tracker-by-hueston' ); ?></p>
         </div>
         <div class="card">
@@ -1621,132 +1484,78 @@ function render_blindspots_tab_content(): void {
             <p><?php echo \esc_html__( 'AI Coverage Rate', 'llm-bot-tracker-by-hueston' ); ?></p>
         </div>
         <div class="card">
-            <h2><?php echo \esc_html( number_format_i18n( $total_published ) ); ?></h2>
+            <h2><?php echo \esc_html( number_format_i18n( $total_pages ) ); ?></h2>
             <p><?php echo \esc_html__( 'Total Published Pages', 'llm-bot-tracker-by-hueston' ); ?></p>
         </div>
     </div>
     
-    <div class="wpcs-filter-bar">
-        <form method="get" action="" style="display: flex; align-items: center; gap: 10px;">
-            <input type="hidden" name="page" value="wpcs-logs" />
-            <input type="hidden" name="tab" value="blindspots" />
-            <label><?php echo \esc_html__( 'Time Period:', 'llm-bot-tracker-by-hueston' ); ?>
-                <select name="days" onchange="this.form.submit()">
-                    <option value="7" <?php selected( $days, 7 ); ?>><?php echo \esc_html__( 'Last 7 days', 'llm-bot-tracker-by-hueston' ); ?></option>
-                    <option value="30" <?php selected( $days, 30 ); ?>><?php echo \esc_html__( 'Last 30 days', 'llm-bot-tracker-by-hueston' ); ?></option>
-                    <option value="90" <?php selected( $days, 90 ); ?>><?php echo \esc_html__( 'Last 90 days', 'llm-bot-tracker-by-hueston' ); ?></option>
-                    <option value="365" <?php selected( $days, 365 ); ?>><?php echo \esc_html__( 'Last year', 'llm-bot-tracker-by-hueston' ); ?></option>
-                </select>
-            </label>
-        </form>
-        <div class="wpcs-refresh-btn">
-            <a href="<?php echo \esc_url( add_query_arg( array( 
-                'page' => 'wpcs-logs', 
-                'tab' => 'blindspots', 
-                'days' => $days, 
-                'refresh' => '1' 
-            ), admin_url( 'tools.php' ) ) ); ?>" class="button button-secondary">
-                <?php echo \esc_html__( '🔄 Refresh Analysis', 'llm-bot-tracker-by-hueston' ); ?>
-            </a>
-            <span class="description" style="margin-left: 10px;">
-                <?php echo \esc_html__( 'Cached for 6 hours', 'llm-bot-tracker-by-hueston' ); ?>
-            </span>
-        </div>
-    </div>
+    <form method="get" action="">
+        <input type="hidden" name="page" value="wpcs-logs" />
+        <input type="hidden" name="tab" value="blindspots" />
+        <label><?php echo \esc_html__( 'Time Period:', 'llm-bot-tracker-by-hueston' ); ?>
+            <select name="days" onchange="this.form.submit()">
+                <option value="7" <?php selected( $days, 7 ); ?>><?php echo \esc_html__( 'Last 7 days', 'llm-bot-tracker-by-hueston' ); ?></option>
+                <option value="30" <?php selected( $days, 30 ); ?>><?php echo \esc_html__( 'Last 30 days', 'llm-bot-tracker-by-hueston' ); ?></option>
+                <option value="90" <?php selected( $days, 90 ); ?>><?php echo \esc_html__( 'Last 90 days', 'llm-bot-tracker-by-hueston' ); ?></option>
+                <option value="365" <?php selected( $days, 365 ); ?>><?php echo \esc_html__( 'Last year', 'llm-bot-tracker-by-hueston' ); ?></option>
+            </select>
+        </label>
+    </form>
     
     <?php if ( ! empty( $ignored_pages ) ) : ?>
         <table class="wp-list-table widefat fixed striped">
             <thead>
                 <tr>
-                    <th style="width: 35%;"><?php echo \esc_html__( 'Title', 'llm-bot-tracker-by-hueston' ); ?></th>
-                    <th style="width: 10%;"><?php echo \esc_html__( 'Type', 'llm-bot-tracker-by-hueston' ); ?></th>
-                    <th style="width: 15%;"><?php echo \esc_html__( 'AI Score', 'llm-bot-tracker-by-hueston' ); ?></th>
-                    <th style="width: 15%;"><?php echo \esc_html__( 'Published', 'llm-bot-tracker-by-hueston' ); ?></th>
-                    <th style="width: 25%;"><?php echo \esc_html__( 'Actions', 'llm-bot-tracker-by-hueston' ); ?></th>
+                    <th><?php echo \esc_html__( 'Title', 'llm-bot-tracker-by-hueston' ); ?></th>
+                    <th><?php echo \esc_html__( 'Type', 'llm-bot-tracker-by-hueston' ); ?></th>
+                    <th><?php echo \esc_html__( 'AI Score', 'llm-bot-tracker-by-hueston' ); ?></th>
+                    <th><?php echo \esc_html__( 'Word Count', 'llm-bot-tracker-by-hueston' ); ?></th>
+                    <th><?php echo \esc_html__( 'Actions', 'llm-bot-tracker-by-hueston' ); ?></th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ( $ignored_pages as $page ) : ?>
+                <?php foreach ( array_slice( $ignored_pages, 0, 100 ) as $page ) : ?>
+                    <?php 
+                    $word_count = str_word_count( \wp_strip_all_tags( $page->post_content ) );
+                    ?>
                     <tr>
                         <td>
                             <strong>
-                                <a href="<?php echo \esc_url( \get_edit_post_link( $page['id'] ) ); ?>">
-                                    <?php echo \esc_html( $page['title'] ?: '(no title)' ); ?>
+                                <a href="<?php echo \esc_url( \get_edit_post_link( $page->ID ) ); ?>">
+                                    <?php echo \esc_html( $page->post_title ?: '(no title)' ); ?>
                                 </a>
                             </strong>
                             <div class="row-actions">
                                 <span class="view">
-                                    <a href="<?php echo \esc_url( $page['permalink'] ); ?>" target="_blank">
+                                    <a href="<?php echo \esc_url( $page->permalink ); ?>" target="_blank">
                                         <?php echo \esc_html__( 'View', 'llm-bot-tracker-by-hueston' ); ?>
                                     </a>
                                 </span>
                             </div>
                         </td>
-                        <td><?php echo \esc_html( ucfirst( $page['type'] ) ); ?></td>
+                        <td><?php echo \esc_html( $page->post_type ); ?></td>
                         <td>
                             <div class="wpcs-score-bar">
-                                <div class="wpcs-score-fill" style="width: <?php echo (int) $page['ai_score']; ?>%;">
-                                    <?php echo (int) $page['ai_score']; ?>%
+                                <div class="wpcs-score-fill" style="width: <?php echo (int) $page->ai_score; ?>%;">
+                                    <?php echo (int) $page->ai_score; ?>%
                                 </div>
                             </div>
                         </td>
-                        <td><?php echo \esc_html( \human_time_diff( strtotime( $page['date'] ), current_time( 'timestamp' ) ) ); ?> ago</td>
+                        <td><?php echo \esc_html( number_format_i18n( $word_count ) ); ?></td>
                         <td>
-                            <a href="<?php echo \esc_url( \get_edit_post_link( $page['id'] ) ); ?>" class="button button-small">
-                                <?php echo \esc_html__( 'Optimize', 'llm-bot-tracker-by-hueston' ); ?>
-                            </a>
-                            <a href="<?php echo \esc_url( $page['permalink'] ); ?>" target="_blank" class="button button-small">
-                                <?php echo \esc_html__( 'View', 'llm-bot-tracker-by-hueston' ); ?>
+                            <a href="<?php echo \esc_url( \get_edit_post_link( $page->ID ) ); ?>" class="button button-small">
+                                <?php echo \esc_html__( 'Edit', 'llm-bot-tracker-by-hueston' ); ?>
                             </a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
-        
-        <?php 
-        // Pagination controls
-        if ( $total_pages_count > 1 ) : 
-            $base_url = add_query_arg( array(
-                'page' => 'wpcs-logs',
-                'tab' => 'blindspots',
-                'days' => $days
-            ), admin_url( 'tools.php' ) );
-        ?>
-            <div class="tablenav">
-                <div class="tablenav-pages">
-                    <span class="displaying-num">
-                        <?php echo sprintf( 
-                            \esc_html__( '%d items', 'llm-bot-tracker-by-hueston' ), 
-                            $ignored_total 
-                        ); ?>
-                    </span>
-                    
-                    <?php if ( $current_page > 1 ) : ?>
-                        <a class="button" href="<?php echo \esc_url( add_query_arg( 'paged', 1, $base_url ) ); ?>">«</a>
-                        <a class="button" href="<?php echo \esc_url( add_query_arg( 'paged', $current_page - 1, $base_url ) ); ?>">‹</a>
-                    <?php endif; ?>
-                    
-                    <span class="paging-input">
-                        <?php echo sprintf( 
-                            \esc_html__( 'Page %d of %d', 'llm-bot-tracker-by-hueston' ),
-                            $current_page,
-                            $total_pages_count
-                        ); ?>
-                    </span>
-                    
-                    <?php if ( $current_page < $total_pages_count ) : ?>
-                        <a class="button" href="<?php echo \esc_url( add_query_arg( 'paged', $current_page + 1, $base_url ) ); ?>">›</a>
-                        <a class="button" href="<?php echo \esc_url( add_query_arg( 'paged', $total_pages_count, $base_url ) ); ?>">»</a>
-                    <?php endif; ?>
-                </div>
-            </div>
+        <?php if ( count( $ignored_pages ) > 100 ) : ?>
+            <p><?php echo \esc_html( sprintf( __( 'Showing first 100 of %d ignored pages.', 'llm-bot-tracker-by-hueston' ), count( $ignored_pages ) ) ); ?></p>
         <?php endif; ?>
-        
     <?php else : ?>
-        <div class="notice notice-success">
-            <p><?php echo \esc_html__( '🎉 Great! All your published pages have been visited by AI bots in this time period.', 'llm-bot-tracker-by-hueston' ); ?></p>
-        </div>
+        <p><?php echo \esc_html__( 'Great! All your published pages have been visited by AI bots in this time period.', 'llm-bot-tracker-by-hueston' ); ?></p>
     <?php endif; ?>
     <?php
 }
