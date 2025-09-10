@@ -36,3 +36,14 @@ yarn-error.log*
 # Composer
 /vendor/
 composer.lock
+
+# Deployment files (DO NOT COMMIT)
+DEPLOYMENT_GUIDE.md
+deploy.sh
+prepare-svn.sh
+upload-to-wordpress.sh
+svn-temp/
+SVN_UPLOAD_STEPS.md
+ASSETS_GUIDE.md
+*.log
+*.zip
