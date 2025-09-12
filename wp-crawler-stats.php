@@ -3,7 +3,7 @@
  * Plugin Name: LLM Bot Tracker by Hueston
  * Plugin URI: https://github.com/HuestonCo/wordpress-llm-crawler-log
  * Description: Track and monitor LLM/AI bot visits to your WordPress site. Display statistics for GPTBot, ClaudeBot, PerplexityBot and 27 other AI crawlers.
- * Version: 1.4.3
+ * Version: 1.4.4
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Author: Hueston
@@ -19,7 +19,7 @@ namespace LLMBotTrackerByHueston;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '1.4.3';
+const VERSION = '1.4.4';
 const DB_VERSION = '1.4.1';
 const OPTION_DB_VERSION = 'wpcs_db_version';
 
@@ -129,7 +129,7 @@ function install_or_upgrade(): void {
  */
 function detect_bot_name( string $user_agent ): string {
     $ua = \strtolower( $user_agent );
-    // LLM-oriented and AI-related bots first.
+    // ONLY AI/LLM bots - no traditional crawlers
     $bots = [
         'gptbot'           => 'GPTBot',
         'chatgpt-user'     => 'ChatGPT-User',
@@ -153,36 +153,11 @@ function detect_bot_name( string $user_agent ): string {
         'linerbot'         => 'LinerBot',
         'qualifiedbot'     => 'QualifiedBot',
         'applebot-extended'=> 'Applebot-Extended',
-        'facebookbot'      => 'FacebookBot',
         'meta-externalagent' => 'Meta-ExternalAgent',
         'meta-externalfetcher' => 'Meta-ExternalFetcher',
         'bytespider'       => 'Bytespider',
         'amazonbot'        => 'Amazonbot',
-        'archive.org_bot'  => 'archive.org_bot',
         'proratainc'       => 'ProRataInc',
-        'timpibot'         => 'Timpibot',
-        'petalbot'         => 'PetalBot',
-        // Traditional crawlers and others.
-        'googlebot'        => 'Googlebot',
-        'bingbot'          => 'Bingbot',
-        'duckduckbot'      => 'DuckDuckBot',
-        'baiduspider'      => 'Baiduspider',
-        'yandexbot'        => 'YandexBot',
-        'applebot'         => 'Applebot',
-        'yahoo! slurp'     => 'Yahoo! Slurp',
-        'sogou'            => 'Sogou',
-        'ahrefsbot'        => 'AhrefsBot',
-        'semrushbot'       => 'SemrushBot',
-        'mj12bot'          => 'MJ12bot',
-        'dotbot'           => 'DotBot',
-        'petalbot'         => 'PetalBot',
-        'facebookexternalhit' => 'FacebookExternalHit',
-        'twitterbot'       => 'Twitterbot',
-        'linkedinbot'      => 'LinkedInBot',
-        'redditbot'        => 'Redditbot',
-        'uptimerobot'      => 'UptimeRobot',
-        'curl'             => 'Curl',
-        'wget'             => 'Wget',
     ];
 
     foreach ( $bots as $needle => $label ) {
@@ -260,17 +235,11 @@ function get_bot_favicon_domain( string $bot_name ): string {
         'LinerBot'          => 'liner.com',
         'QualifiedBot'      => 'qualified.io',
         'Applebot-Extended' => 'apple.com',
-        'Applebot'          => 'apple.com',
-        'FacebookBot'       => 'facebook.com',
         'Meta-ExternalAgent'=> 'meta.com',
         'Meta-ExternalFetcher'=> 'meta.com',
         'MistralAI-User'    => 'mistral.ai',
-        'DuckAssistBot'     => 'duckduckgo.com',
-        'PetalBot'          => 'huawei.com',
         'Amazonbot'         => 'amazon.com',
-        'archive.org_bot'   => 'archive.org',
         'ProRataInc'        => 'prorata.ai',
-        'Timpibot'          => 'timpi.io',
         'Omgilibot'         => 'omgili.com',
         'Omgili'            => 'omgili.com',
     ];

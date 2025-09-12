@@ -4,7 +4,7 @@ Tags: ai bot tracker, chatgpt detector, claude bot, perplexity crawler, ai seo, 
 Requires at least: 6.5
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -248,6 +248,12 @@ No! The plugin is designed to be completely automatic. Install it and forget it.
 
 == Changelog ==
 
+= 1.4.4 (2024-12-09) =
+* Fix: Completely removed non-AI bot detection from core
+* Enhancement: Plugin now ONLY detects and logs AI/LLM traffic
+* Performance: Faster processing with fewer bots to check
+* Cleanup: Removed all traditional crawlers, SEO tools, and social media bots
+
 = 1.4.3 (2024-12-09) =
 * Refined: Focused exclusively on AI/LLM bots - removed non-AI crawlers
 * Enhancement: Improved bot classification for cleaner analytics
@@ -327,6 +333,9 @@ No! The plugin is designed to be completely automatic. Install it and forget it.
 * GPTBot and CCBot detection
 
 == Upgrade Notice ==
+
+= 1.4.4 =
+Important fix! Plugin now tracks ONLY AI/LLM bots. All non-AI crawlers removed for pure AI traffic analytics.
 
 = 1.4.3 =
 Refined focus on AI/LLM bots only! Cleaner analytics with 27 verified AI agents. Improved performance and classification.
