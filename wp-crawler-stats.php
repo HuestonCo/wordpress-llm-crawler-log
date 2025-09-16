@@ -3,7 +3,7 @@
  * Plugin Name: LLM Bot Tracker by Hueston
  * Plugin URI: https://github.com/HuestonCo/wordpress-llm-crawler-log
  * Description: Track and monitor LLM/AI bot visits to your WordPress site. Display statistics for GPTBot, ClaudeBot, PerplexityBot and 27 other AI crawlers.
- * Version: 1.4.4
+ * Version: 1.5.0
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Author: Hueston
@@ -19,7 +19,7 @@ namespace LLMBotTrackerByHueston;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '1.4.4';
+const VERSION = '1.5.0';
 const DB_VERSION = '1.4.1';
 const OPTION_DB_VERSION = 'wpcs_db_version';
 
@@ -1070,6 +1070,105 @@ function calculate_ai_discovery_score( $post_id ) {
 }
 
 /**
+ * Handle CSV export of crawler logs
+ */
+function handle_csv_export(): void {
+    // Check permissions
+    if ( ! \current_user_can( 'manage_options' ) ) {
+        \wp_die( \esc_html__( 'Unauthorized', 'llm-bot-tracker-by-hueston' ) );
+    }
+
+    // Verify nonce
+    if ( ! isset( $_GET['wpcs_export_nonce'] ) || ! \wp_verify_nonce( \sanitize_text_field( \wp_unslash( $_GET['wpcs_export_nonce'] ) ), 'wpcs_export_logs' ) ) {
+        \wp_die( \esc_html__( 'Security check failed', 'llm-bot-tracker-by-hueston' ) );
+    }
+
+    global $wpdb;
+    $requests_table = $wpdb->prefix . 'wpcs_requests';
+
+    // Get filters
+    $filter_bot = isset( $_GET['bot'] ) ? \sanitize_text_field( \wp_unslash( $_GET['bot'] ) ) : '';
+    $filter_path = isset( $_GET['path'] ) ? \sanitize_text_field( \wp_unslash( $_GET['path'] ) ) : '';
+    $filter_ip = isset( $_GET['ip'] ) ? \sanitize_text_field( \wp_unslash( $_GET['ip'] ) ) : '';
+    $filter_from = isset( $_GET['from'] ) ? \sanitize_text_field( \wp_unslash( $_GET['from'] ) ) : '';
+    $filter_to = isset( $_GET['to'] ) ? \sanitize_text_field( \wp_unslash( $_GET['to'] ) ) : '';
+
+    // Build WHERE clause
+    $where = [ '1=1' ];
+    $args = [];
+    if ( $filter_bot !== '' ) {
+        $where[] = 'bot_name LIKE %s';
+        $args[] = '%' . $filter_bot . '%';
+    }
+    if ( $filter_path !== '' ) {
+        $where[] = 'url_path LIKE %s';
+        $args[] = '%' . $filter_path . '%';
+    }
+    if ( $filter_ip !== '' ) {
+        $where[] = 'ip_address LIKE %s';
+        $args[] = '%' . $filter_ip . '%';
+    }
+    if ( $filter_from !== '' ) {
+        $where[] = 'hit_at >= %s';
+        $args[] = $filter_from . ' 00:00:00';
+    }
+    if ( $filter_to !== '' ) {
+        $where[] = 'hit_at <= %s';
+        $args[] = $filter_to . ' 23:59:59';
+    }
+
+    // Fetch data
+    $sql = 'SELECT hit_at, bot_name, url_path, ip_address, response_code, user_agent FROM ' . $requests_table . ' WHERE ' . implode( ' AND ', $where ) . ' ORDER BY id DESC';
+    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+    $rows = $wpdb->get_results( $wpdb->prepare( $sql, $args ) );
+
+    // Set headers for CSV download
+    $filename = 'llm-bot-tracker-export-' . date( 'Y-m-d-His' ) . '.csv';
+    header( 'Content-Type: text/csv; charset=utf-8' );
+    header( 'Content-Disposition: attachment; filename=' . $filename );
+    header( 'Pragma: no-cache' );
+    header( 'Expires: 0' );
+
+    // Open output stream
+    $output = fopen( 'php://output', 'w' );
+
+    // Add BOM for Excel UTF-8 compatibility
+    fprintf( $output, chr(0xEF) . chr(0xBB) . chr(0xBF) );
+
+    // Write headers
+    fputcsv( $output, [
+        'Date/Time',
+        'Bot Name',
+        'URL Path',
+        'IP Address',
+        'Response Code',
+        'User Agent'
+    ] );
+
+    // Write data
+    foreach ( $rows as $row ) {
+        fputcsv( $output, [
+            $row->hit_at,
+            $row->bot_name,
+            $row->url_path,
+            $row->ip_address,
+            $row->response_code ?: '200',
+            $row->user_agent
+        ] );
+    }
+
+    fclose( $output );
+    exit;
+}
+
+// Hook the export handler early
+\add_action( 'admin_init', function() {
+    if ( isset( $_GET['wpcs_export'] ) && $_GET['wpcs_export'] === '1' && isset( $_GET['page'] ) && $_GET['page'] === 'wpcs-logs' ) {
+        handle_csv_export();
+    }
+} );
+
+/**
  * Admin: Tools > Crawler Logs
  */
 \add_action( 'admin_menu', function () {
@@ -1467,6 +1566,25 @@ function render_logs_tab_content(): void {
     echo '<button class="button button-primary">' . \esc_html__( 'Filter', 'llm-bot-tracker-by-hueston' ) . '</button>';
     $reset_url = \admin_url( 'tools.php?page=wpcs-logs' );
     echo ' <a class="button" href="' . \esc_url( $reset_url ) . '">' . \esc_html__( 'Reset', 'llm-bot-tracker-by-hueston' ) . '</a>';
+    
+    // Add export button
+    $export_url = add_query_arg( [
+        'page' => 'wpcs-logs',
+        'wpcs_export' => '1',
+        'bot' => $filter_bot,
+        'path' => $filter_path,
+        'ip' => $filter_ip,
+        'from' => $filter_from,
+        'to' => $filter_to,
+        'wpcs_export_nonce' => \wp_create_nonce( 'wpcs_export_logs' )
+    ], admin_url( 'tools.php' ) );
+    echo ' <a class="button button-secondary" href="' . \esc_url( $export_url ) . '" title="' . \esc_attr( sprintf( __( 'Export %d records to CSV', 'llm-bot-tracker-by-hueston' ), $total ) ) . '">' . \esc_html__( '📥 Export CSV', 'llm-bot-tracker-by-hueston' ) . '</a>';
+    
+    // Show export info
+    if ( $total > 0 ) {
+        echo ' <span class="description">' . sprintf( \esc_html__( '(%d records)', 'llm-bot-tracker-by-hueston' ), $total ) . '</span>';
+    }
+    
     echo '</form>';
     echo '</div>';
     echo '</div>';

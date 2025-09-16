@@ -4,7 +4,7 @@ Tags: ai bot tracker, chatgpt detector, claude bot, perplexity crawler, ai seo, 
 Requires at least: 6.5
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.4.4
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,6 +55,7 @@ Without this data, you're flying blind in the AI era of search.
 **📊 Powerful Analytics Dashboard (Tools > LLM Crawler Logs)**
 * Complete log of all AI bot activity
 * Advanced filtering by bot type, date range, URL path, IP address
+* **NEW:** CSV export - download your data for offline analysis
 * 30-day trend analysis - spot patterns and changes
 * Top bots leaderboard - see your most frequent AI visitors
 * Path analysis - discover your most AI-visited content
@@ -62,7 +63,7 @@ Without this data, you're flying blind in the AI era of search.
 * Bot verification via IP lookup
 * Response code tracking (200, 404, etc.)
 * Bulk actions for log management
-* Export-ready data views
+* Export filtered or complete datasets
 
 **⚡ Performance & Privacy**
 * Runs silently in background - zero configuration
@@ -211,7 +212,7 @@ Very accurate. We use official user agent strings published by AI companies and 
 All data is stored locally in your WordPress database. No external services, no API calls, no third-party dependencies. You have complete control and privacy.
 
 = Can I export the tracking data? =
-Data is fully accessible via the admin interface with advanced filtering. CSV export is coming in version 1.4. Data is stored in standard WordPress tables for SQL access if needed.
+Yes! Click the "📥 Export CSV" button in the admin dashboard to download your AI bot logs as a CSV file. The export respects your current filters, so you can export specific date ranges, bot types, or all data. The CSV includes date/time, bot name, URL path, IP address, response code, and user agent information.
 
 = Does it work with caching plugins? =
 Yes! Bot detection happens at the WordPress core level before any caching. Works perfectly with WP Rocket, W3 Total Cache, WP Super Cache, and all major caching plugins.
@@ -247,6 +248,15 @@ No! The plugin is designed to be completely automatic. Install it and forget it.
 9. **Compact Stats Widget** - Optional sidebar display
 
 == Changelog ==
+
+= 1.5.0 (2024-12-10) =
+* New Feature: CSV export functionality for AI bot logs
+* Enhancement: Export filtered data or complete datasets
+* Enhancement: Shows record count before export
+* Added: Excel-compatible UTF-8 BOM for proper character encoding
+* Added: Export includes date/time, bot name, URL, IP, response code, and user agent
+* Security: Nonce verification for export actions
+* UI: Export button added to admin dashboard with record count
 
 = 1.4.4 (2024-12-09) =
 * Fix: Completely removed non-AI bot detection from core
@@ -333,6 +343,9 @@ No! The plugin is designed to be completely automatic. Install it and forget it.
 * GPTBot and CCBot detection
 
 == Upgrade Notice ==
+
+= 1.5.0 =
+NEW FEATURE! Export your AI bot logs to CSV for external analysis. Download filtered or complete datasets directly from the admin dashboard.
 
 = 1.4.4 =
 Important fix! Plugin now tracks ONLY AI/LLM bots. All non-AI crawlers removed for pure AI traffic analytics.
