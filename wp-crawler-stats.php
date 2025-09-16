@@ -3,7 +3,7 @@
  * Plugin Name: LLM Bot Tracker by Hueston
  * Plugin URI: https://github.com/HuestonCo/wordpress-llm-crawler-log
  * Description: Track and monitor LLM/AI bot visits to your WordPress site. Display statistics for GPTBot, ClaudeBot, PerplexityBot and 27 other AI crawlers.
- * Version: 1.5.0
+ * Version: 1.5.1
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Author: Hueston
@@ -19,7 +19,7 @@ namespace LLMBotTrackerByHueston;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '1.5.0';
+const VERSION = '1.5.1';
 const DB_VERSION = '1.4.1';
 const OPTION_DB_VERSION = 'wpcs_db_version';
 
@@ -1119,8 +1119,15 @@ function handle_csv_export(): void {
 
     // Fetch data
     $sql = 'SELECT hit_at, bot_name, url_path, ip_address, response_code, user_agent FROM ' . $requests_table . ' WHERE ' . implode( ' AND ', $where ) . ' ORDER BY id DESC';
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-    $rows = $wpdb->get_results( $wpdb->prepare( $sql, $args ) );
+    
+    // Only use prepare if we have args, otherwise query directly
+    if ( ! empty( $args ) ) {
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+        $rows = $wpdb->get_results( $wpdb->prepare( $sql, $args ) );
+    } else {
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+        $rows = $wpdb->get_results( $sql );
+    }
 
     // Set headers for CSV download
     $filename = 'llm-bot-tracker-export-' . date( 'Y-m-d-His' ) . '.csv';

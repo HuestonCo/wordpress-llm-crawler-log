@@ -4,7 +4,7 @@ Tags: ai bot tracker, chatgpt detector, claude bot, perplexity crawler, ai seo, 
 Requires at least: 6.5
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -249,6 +249,11 @@ No! The plugin is designed to be completely automatic. Install it and forget it.
 
 == Changelog ==
 
+= 1.5.1 (2024-12-10) =
+* Bug Fix: CSV export now correctly exports data when no filters are applied
+* Fix: Resolved issue with empty CSV exports containing only headers
+* Enhancement: Improved database query handling for export functionality
+
 = 1.5.0 (2024-12-10) =
 * New Feature: CSV export functionality for AI bot logs
 * Enhancement: Export filtered data or complete datasets
@@ -343,6 +348,9 @@ No! The plugin is designed to be completely automatic. Install it and forget it.
 * GPTBot and CCBot detection
 
 == Upgrade Notice ==
+
+= 1.5.1 =
+Bug fix for CSV export - resolves issue where exports were empty. Export now works correctly with or without filters.
 
 = 1.5.0 =
 NEW FEATURE! Export your AI bot logs to CSV for external analysis. Download filtered or complete datasets directly from the admin dashboard.
