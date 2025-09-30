@@ -125,44 +125,63 @@ function install_or_upgrade(): void {
 } );
 
 /**
+ * Load and cache bot data from the external JSON file.
+ *
+ * @return array<int, array{pattern: string, name: string, domain: string}>
+ */
+function get_bot_data(): array {
+    static $bot_data = null;
+
+    if ( $bot_data !== null ) {
+        return $bot_data;
+    }
+
+    // Tie the cache key to the plugin version. A new version invalidates the cache.
+    $cache_key = 'wpcs_bot_data_cache_' . VERSION;
+    $cached_data = \get_transient( $cache_key );
+
+    if ( is_array( $cached_data ) ) {
+        $bot_data = $cached_data;
+        return $bot_data;
+    }
+
+    $json_file = plugin_dir_path( __FILE__ ) . 'bot-info.json';
+
+    if ( ! file_exists( $json_file ) ) {
+        // Cache an empty result "forever". It's invalidated on plugin update.
+        \set_transient( $cache_key, [], 0 );
+        $bot_data = [];
+        return [];
+    }
+
+    // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+    $json_content = file_get_contents( $json_file );
+    $decoded_data = json_decode( $json_content, true );
+
+    if ( ! is_array( $decoded_data ) ) {
+        // Cache an empty result if JSON is invalid.
+        \set_transient( $cache_key, [], 0 );
+        $bot_data = [];
+        return [];
+    }
+
+    // Cache the bot data "forever". It will be automatically invalidated
+    // when the plugin VERSION constant changes, creating a new cache key.
+    \set_transient( $cache_key, $decoded_data, 0 );
+    $bot_data = $decoded_data;
+    return $bot_data;
+}
+
+/**
  * Utility: Determine bot name from user agent, or empty string if not a recognized bot.
  */
 function detect_bot_name( string $user_agent ): string {
     $ua = \strtolower( $user_agent );
-    // ONLY AI/LLM bots - no traditional crawlers
-    $bots = [
-        'gptbot'           => 'GPTBot',
-        'chatgpt-user'     => 'ChatGPT-User',
-        'oai-searchbot'    => 'OAI-SearchBot',
-        'claudebot'        => 'ClaudeBot',
-        'claude-web'       => 'Claude-Web',
-        'claude-searchbot' => 'Claude-SearchBot',
-        'claude-user'      => 'Claude-User',
-        'perplexitybot'    => 'PerplexityBot',
-        'perplexity-user'  => 'Perplexity-User',
-        'ccbot'            => 'CCBot',
-        'omgilibot'        => 'Omgilibot',
-        'omgili'           => 'Omgili',
-        'mistralai-user'   => 'MistralAI-User',
-        'google-extended'  => 'Google-Extended',
-        'google-cloudvertexbot' => 'Google-CloudVertexBot',
-        'googleagent-mariner' => 'GoogleAgent-Mariner',
-        'gemini-deep-research' => 'Gemini-Deep-Research',
-        'novaact'          => 'NovaAct',
-        'devin'            => 'Devin',
-        'linerbot'         => 'LinerBot',
-        'qualifiedbot'     => 'QualifiedBot',
-        'applebot-extended'=> 'Applebot-Extended',
-        'meta-externalagent' => 'Meta-ExternalAgent',
-        'meta-externalfetcher' => 'Meta-ExternalFetcher',
-        'bytespider'       => 'Bytespider',
-        'amazonbot'        => 'Amazonbot',
-        'proratainc'       => 'ProRataInc',
-    ];
+    $bots = get_bot_data();
 
-    foreach ( $bots as $needle => $label ) {
-        if ( \strpos( $ua, $needle ) !== false ) {
-            return $label;
+    foreach ( $bots as $bot ) {
+        if ( \strpos( $ua, $bot['pattern'] ) !== false ) {
+            return $bot['name'];
         }
     }
 
@@ -176,35 +195,8 @@ function detect_bot_name( string $user_agent ): string {
  * @return array<string>
  */
 function get_llm_bot_labels(): array {
-    return [
-        'GPTBot',
-        'OAI-SearchBot',
-        'ChatGPT-User',
-        'ClaudeBot',
-        'Claude-Web',
-        'Claude-SearchBot',
-        'Claude-User',
-        'PerplexityBot',
-        'Perplexity-User',
-        'CCBot',
-        'Bytespider',
-        'MistralAI-User',
-        'Google-Extended',
-        'Google-CloudVertexBot',
-        'GoogleAgent-Mariner',
-        'Gemini-Deep-Research',
-        'NovaAct',
-        'Devin',
-        'LinerBot',
-        'QualifiedBot',
-        'Applebot-Extended',
-        'Meta-ExternalAgent',
-        'Meta-ExternalFetcher',
-        'Amazonbot',
-        'ProRataInc',
-        'Omgilibot',
-        'Omgili',
-    ];
+    $bots = get_bot_data();
+    return array_column( $bots, 'name' );
 }
 
 /**
@@ -214,37 +206,14 @@ function get_llm_bot_labels(): array {
  * @return string Domain name (without scheme)
  */
 function get_bot_favicon_domain( string $bot_name ): string {
-    $map = [
-        'GPTBot'            => 'openai.com',
-        'OAI-SearchBot'     => 'openai.com',
-        'ChatGPT-User'      => 'openai.com',
-        'ClaudeBot'         => 'anthropic.com',
-        'Claude-Web'        => 'anthropic.com',
-        'Claude-SearchBot'  => 'anthropic.com',
-        'Claude-User'       => 'anthropic.com',
-        'PerplexityBot'     => 'perplexity.ai',
-        'Perplexity-User'   => 'perplexity.ai',
-        'CCBot'             => 'commoncrawl.org',
-        'Bytespider'        => 'bytedance.com',
-        'Google-Extended'   => 'google.com',
-        'Google-CloudVertexBot' => 'cloud.google.com',
-        'GoogleAgent-Mariner' => 'google.com',
-        'Gemini-Deep-Research' => 'gemini.google.com',
-        'NovaAct'           => 'amazon.com',
-        'Devin'             => 'devin.ai',
-        'LinerBot'          => 'liner.com',
-        'QualifiedBot'      => 'qualified.io',
-        'Applebot-Extended' => 'apple.com',
-        'Meta-ExternalAgent'=> 'meta.com',
-        'Meta-ExternalFetcher'=> 'meta.com',
-        'MistralAI-User'    => 'mistral.ai',
-        'Amazonbot'         => 'amazon.com',
-        'ProRataInc'        => 'prorata.ai',
-        'Omgilibot'         => 'omgili.com',
-        'Omgili'            => 'omgili.com',
-    ];
+    static $domain_map = null;
 
-    $domain = $map[ $bot_name ] ?? '';
+    if ( $domain_map === null ) {
+        $bots = get_bot_data();
+        $domain_map = array_column( $bots, 'domain', 'name' );
+    }
+
+    $domain = $domain_map[ $bot_name ] ?? '';
     /**
      * Filter the favicon domain for a bot label.
      *
