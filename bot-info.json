@@ -1,0 +1,297 @@
+[
+  {
+    "pattern": "gptbot",
+    "name": "GPTBot",
+    "domain": "openai.com"
+  },
+  {
+    "pattern": "chatgpt-user",
+    "name": "ChatGPT-User",
+    "domain": "openai.com"
+  },
+  {
+    "pattern": "chatgpt-browser",
+    "name": "ChatGPT-Browser",
+    "domain": "openai.com"
+  },
+  {
+    "pattern": "oai-searchbot",
+    "name": "OAI-SearchBot",
+    "domain": "openai.com"
+  },
+  {
+    "pattern": "claudebot",
+    "name": "ClaudeBot",
+    "domain": "anthropic.com"
+  },
+  {
+    "pattern": "claude-web",
+    "name": "Claude-Web",
+    "domain": "anthropic.com"
+  },
+  {
+    "pattern": "claude-searchbot",
+    "name": "Claude-SearchBot",
+    "domain": "anthropic.com"
+  },
+  {
+    "pattern": "claude-user",
+    "name": "Claude-User",
+    "domain": "anthropic.com"
+  },
+  {
+    "pattern": "anthropic-ai",
+    "name": "Anthropic-AI",
+    "domain": "anthropic.com"
+  },
+  {
+    "pattern": "perplexitybot",
+    "name": "PerplexityBot",
+    "domain": "perplexity.ai"
+  },
+  {
+    "pattern": "perplexity-user",
+    "name": "Perplexity-User",
+    "domain": "perplexity.ai"
+  },
+  {
+    "pattern": "ccbot",
+    "name": "CCBot",
+    "domain": "commoncrawl.org"
+  },
+  {
+    "pattern": "omgilibot",
+    "name": "Omgilibot",
+    "domain": "omgili.com"
+  },
+  {
+    "pattern": "omgili",
+    "name": "Omgili",
+    "domain": "omgili.com"
+  },
+  {
+    "pattern": "mistralai-user",
+    "name": "MistralAI-User",
+    "domain": "mistral.ai"
+  },
+  {
+    "pattern": "mistral le chat",
+    "name": "Mistral-Le-Chat",
+    "domain": "mistral.ai"
+  },
+  {
+    "pattern": "youbot",
+    "name": "YouBot",
+    "domain": "you.com"
+  },
+  {
+    "pattern": "timpibot",
+    "name": "Timpibot",
+    "domain": "timpi.io"
+  },
+  {
+    "pattern": "diffbot",
+    "name": "Diffbot",
+    "domain": "diffbot.com"
+  },
+  {
+    "pattern": "ai2bot",
+    "name": "AI2Bot",
+    "domain": "allenai.org"
+  },
+  {
+    "pattern": "cohere-ai",
+    "name": "Cohere-AI",
+    "domain": "cohere.com"
+  },
+  {
+    "pattern": "cohere-command",
+    "name": "Cohere-Command",
+    "domain": "cohere.com"
+  },
+  {
+    "pattern": "google-extended",
+    "name": "Google-Extended",
+    "domain": "google.com"
+  },
+  {
+    "pattern": "google-cloudvertexbot",
+    "name": "Google-CloudVertexBot",
+    "domain": "google.com"
+  },
+  {
+    "pattern": "googleagent-mariner",
+    "name": "GoogleAgent-Mariner",
+    "domain": "google.com"
+  },
+  {
+    "pattern": "gemini-deep-research",
+    "name": "Gemini-Deep-Research",
+    "domain": "google.com"
+  },
+  {
+    "pattern": "gemini-ai",
+    "name": "Gemini-AI",
+    "domain": "google.com"
+  },
+  {
+    "pattern": "bard-ai",
+    "name": "Bard-AI",
+    "domain": "google.com"
+  },
+  {
+    "pattern": "apis-google",
+    "name": "APIs-Google",
+    "domain": "google.com"
+  },
+  {
+    "pattern": "novaact",
+    "name": "NovaAct",
+    "domain": "cognition.ai"
+  },
+  {
+    "pattern": "devin",
+    "name": "Devin",
+    "domain": "cognition.ai"
+  },
+  {
+    "pattern": "linerbot",
+    "name": "LinerBot",
+    "domain": "liner.ai"
+  },
+  {
+    "pattern": "qualifiedbot",
+    "name": "QualifiedBot",
+    "domain": "qualified.io"
+  },
+  {
+    "pattern": "applebot-extended",
+    "name": "Applebot-Extended",
+    "domain": "apple.com"
+  },
+  {
+    "pattern": "meta-externalagent",
+    "name": "Meta-ExternalAgent",
+    "domain": "meta.com"
+  },
+  {
+    "pattern": "meta-externalfetcher",
+    "name": "Meta-ExternalFetcher",
+    "domain": "meta.com"
+  },
+  {
+    "pattern": "facebookexternalhit",
+    "name": "FacebookExternalHit",
+    "domain": "meta.com"
+  },
+  {
+    "pattern": "facebookbot",
+    "name": "FacebookBot",
+    "domain": "meta.com"
+  },
+  {
+    "pattern": "linkedinbot",
+    "name": "LinkedInBot",
+    "domain": "linkedin.com"
+  },
+  {
+    "pattern": "bytespider",
+    "name": "Bytespider",
+    "domain": "bytedance.com"
+  },
+  {
+    "pattern": "amazonbot",
+    "name": "Amazonbot",
+    "domain": "amazon.com"
+  },
+  {
+    "pattern": "proratainc",
+    "name": "ProRataInc",
+    "domain": "prorata.inc"
+  },
+  {
+    "pattern": "xai-bot",
+    "name": "xAI-Bot",
+    "domain": "x.ai"
+  },
+  {
+    "pattern": "deepseekbot",
+    "name": "DeepSeekBot",
+    "domain": "deepseek.com"
+  },
+  {
+    "pattern": "huggingface-bot",
+    "name": "HuggingFace-Bot",
+    "domain": "huggingface.co"
+  },
+  {
+    "pattern": "character-ai",
+    "name": "Character-AI",
+    "domain": "character.ai"
+  },
+  {
+    "pattern": "groq-bot",
+    "name": "Groq-Bot",
+    "domain": "groq.com"
+  },
+  {
+    "pattern": "together-bot",
+    "name": "Together-Bot",
+    "domain": "together.ai"
+  },
+  {
+    "pattern": "replicate-bot",
+    "name": "Replicate-Bot",
+    "domain": "replicate.com"
+  },
+  {
+    "pattern": "duckassistbot",
+    "name": "DuckAssistBot",
+    "domain": "duckduckgo.com"
+  },
+  {
+    "pattern": "andibot",
+    "name": "Andibot",
+    "domain": "andisearch.com"
+  },
+  {
+    "pattern": "pangubot",
+    "name": "PanguBot",
+    "domain": "huawei.com"
+  },
+  {
+    "pattern": "petalbot",
+    "name": "PetalBot",
+    "domain": "huawei.com"
+  },
+  {
+    "pattern": "firecrawlagent",
+    "name": "FirecrawlAgent",
+    "domain": "firecrawl.dev"
+  },
+  {
+    "pattern": "runpod-bot",
+    "name": "RunPod-Bot",
+    "domain": "runpod.io"
+  },
+  {
+    "pattern": "brightbot",
+    "name": "BrightBot",
+    "domain": "brightdata.com"
+  },
+  {
+    "pattern": "webzio-extended",
+    "name": "Webzio-Extended",
+    "domain": "webz.io"
+  },
+  {
+    "pattern": "imagesiftbot",
+    "name": "ImagesiftBot",
+    "domain": "imagesift.com"
+  },
+  {
+    "pattern": "bigsur.ai",
+    "name": "BigSur-AI",
+    "domain": "bigsur.ai"
+  }
+]
