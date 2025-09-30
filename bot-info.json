@@ -147,7 +147,7 @@
   {
     "pattern": "novaact",
     "name": "NovaAct",
-    "domain": "cognition.ai"
+    "domain": "amazon.com"
   },
   {
     "pattern": "devin",
@@ -207,7 +207,7 @@
   {
     "pattern": "proratainc",
     "name": "ProRataInc",
-    "domain": "prorata.inc"
+    "domain": "prorata.ai"
   },
   {
     "pattern": "xai-bot",
